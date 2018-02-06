@@ -18,9 +18,7 @@ pub struct Style {
 
 impl Default for Style {
     fn default() -> Style {
-        Style {
-            indent: 2,
-        }
+        Style { indent: 2 }
     }
 }
 
@@ -58,7 +56,8 @@ impl<'a> Formatter<'a> {
         self.indent += self.style.indent;
     }
     pub fn end_block(&mut self) {
-        self.indent = self.indent.checked_sub(self.style.indent)
+        self.indent = self.indent
+            .checked_sub(self.style.indent)
             .expect("negative indent");
         self.indent();
         self.buf.push('}');

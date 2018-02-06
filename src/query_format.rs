@@ -238,7 +238,10 @@ impl Displayable for VariableType {
 impl Displayable for Value {
     fn display(&self, f: &mut Formatter) {
         match *self {
-            Value::Variable(ref name) => { f.write("$"); f.write(name); },
+            Value::Variable(ref name) => {
+                f.write("$");
+                f.write(name);
+            }
             Value::Int(ref num) => f.write(&format!("{}", num.0)),
             Value::Float(val) => f.write(&format!("{}", val)),
             Value::String(ref val) => f.write_quoted(val),

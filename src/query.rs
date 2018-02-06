@@ -14,7 +14,6 @@ use position::Pos;
 /// An alias for string, used where graphql expects a name
 pub type Name = String;
 
-
 /// Root of query data
 #[derive(Debug, Clone, PartialEq)]
 pub struct Document {
