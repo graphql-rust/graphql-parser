@@ -42,9 +42,11 @@
 #![warn(missing_debug_implementations)]
 
 extern crate combine;
-#[macro_use] extern crate failure;
-#[cfg(test)] #[macro_use] extern crate pretty_assertions;
-
+#[macro_use]
+extern crate failure;
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
 
 mod position;
 mod tokenizer;
