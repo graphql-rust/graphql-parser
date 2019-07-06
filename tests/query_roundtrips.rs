@@ -20,6 +20,7 @@ fn roundtrip(filename: &str, style: &Style) {
     let mut f = File::open(&path).unwrap();
     f.read_to_string(&mut buf).unwrap();
     let ast = parse_query(&buf).unwrap();
+    println!("{}", ast.format(style));
     assert_eq!(ast.format(style), buf);
 }
 
@@ -57,6 +58,7 @@ fn roundtrip2(filename: &str) {
 #[test] fn query_list_arg() { roundtrip_default("query_list_argument"); }
 #[test] fn query_object_arg() { roundtrip_default("query_object_argument"); }
 #[test] fn query_object_arg_multiline() { roundtrip_multiline_args("query_object_argument_multiline"); }
+#[test] fn query_array_arg_multiline() { roundtrip_multiline_args("query_array_argument_multiline"); }
 #[test] fn nested_selection() { roundtrip_default("nested_selection"); }
 #[test] fn inline_fragment() { roundtrip_default("inline_fragment"); }
 #[test] fn inline_fragment_dir() { roundtrip_default("inline_fragment_dir"); }

@@ -252,15 +252,17 @@ impl Displayable for Value {
             Value::Null => f.write("null"),
             Value::Enum(ref name) => f.write(name),
             Value::List(ref items) => {
-                f.write("[");
+                f.start_argument_block('[');
                 if !items.is_empty() {
+                    f.start_argument();
                     items[0].display(f);
                     for item in &items[1..] {
-                        f.write(", ");
+                        f.deliniate_argument();
+                        f.start_argument();
                         item.display(f);
                     }
                 }
-                f.write("]");
+                f.end_argument_block(']');
             }
             Value::Object(ref items) => {
                 f.start_argument_block('{');
