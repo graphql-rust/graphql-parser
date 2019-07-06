@@ -91,17 +91,19 @@ impl Displayable for Selection {
 
 fn format_arguments(arguments: &[(String, Value)], f: &mut Formatter) {
     if !arguments.is_empty() {
-        f.write("(");
+        f.start_argument_block('(');
+        f.start_argument();
         f.write(&arguments[0].0);
         f.write(": ");
         arguments[0].1.display(f);
         for arg in &arguments[1..] {
-            f.write(", ");
+            f.deliniate_argument();
+            f.start_argument();
             f.write(&arg.0);
             f.write(": ");
             arg.1.display(f);
         }
-        f.write(")");
+        f.end_argument_block(')');
     }
 }
 
@@ -261,19 +263,20 @@ impl Displayable for Value {
                 f.write("]");
             }
             Value::Object(ref items) => {
-                f.write("{");
+                f.start_argument_block('{');
                 let mut first = true;
                 for (name, value) in items.iter() {
                     if first {
                         first = false;
                     } else {
-                        f.write(", ");
+                        f.deliniate_argument();
                     }
+                    f.start_argument();
                     f.write(name);
                     f.write(": ");
                     value.display(f);
                 }
-                f.write("}");
+                f.end_argument_block('}');
             }
         }
     }

@@ -18,12 +18,14 @@ pub(crate) struct Formatter<'a> {
 #[derive(Debug, PartialEq, Clone)]
 pub struct Style {
     indent: u32,
+    multiline_arguments: bool,
 }
 
 impl Default for Style {
     fn default() -> Style {
         Style {
             indent: 2,
+            multiline_arguments: false,
         }
     }
 }
@@ -32,6 +34,12 @@ impl Style {
     /// Change the number of spaces used for indentation
     pub fn indent(&mut self, indent: u32) -> &mut Self {
         self.indent = indent;
+        self
+    }
+
+    /// Set whether to add new lines between arguments
+    pub fn multiline_arguments(&mut self, multiline_arguments: bool) -> &mut Self {
+        self.multiline_arguments = multiline_arguments;
         self
     }
 }
@@ -59,15 +67,44 @@ impl<'a> Formatter<'a> {
         self.buf.push('\n');
     }
 
+    pub fn start_argument_block(&mut self, open_char: char) {
+        self.buf.push(open_char);
+        if self.style.multiline_arguments {
+            self.inc_indent();
+        }
+    }
+
+    pub fn end_argument_block(&mut self, close_char: char) {
+        if self.style.multiline_arguments {
+            self.endline();
+            self.dec_indent();
+            self.indent();
+        }
+        self.buf.push(close_char);
+    }
+
+    pub fn start_argument(&mut self) {
+        if self.style.multiline_arguments {
+            self.endline();
+            self.indent();
+        }
+    }
+
+    pub fn deliniate_argument(&mut self) {
+        self.buf.push(',');
+        if !self.style.multiline_arguments {
+            self.buf.push(' ');
+        }
+    }
+
     pub fn start_block(&mut self) {
         self.buf.push('{');
         self.endline();
-        self.indent += self.style.indent;
+        self.inc_indent();
     }
 
     pub fn end_block(&mut self) {
-        self.indent = self.indent.checked_sub(self.style.indent)
-            .expect("negative indent");
+        self.dec_indent();
         self.indent();
         self.buf.push('}');
         self.endline();
@@ -127,6 +164,15 @@ impl<'a> Formatter<'a> {
             self.indent();
             self.buf.push_str(r#"""""#);
         }
+    }
+
+    fn inc_indent(&mut self) {
+        self.indent += self.style.indent;
+    }
+
+    fn dec_indent(&mut self) {
+        self.indent = self.indent.checked_sub(self.style.indent)
+            .expect("negative indent");
     }
 }
 
