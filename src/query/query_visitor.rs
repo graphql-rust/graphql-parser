@@ -117,6 +117,7 @@ fn walk_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Def
 
 fn walk_fragment_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast FragmentDefinition) {
     visitor.visit_fragment_definition(node);
+    walk_selection_set(visitor, &node.selection_set);
 }
 
 fn walk_operation_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast OperationDefinition) {
