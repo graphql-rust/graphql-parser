@@ -223,4 +223,5 @@ fn walk_fragment_spread<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'as
 
 fn walk_inline_fragment<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast InlineFragment) {
     visitor.visit_inline_fragment(node);
+    walk_selection_set(visitor, &node.selection_set);
 }
