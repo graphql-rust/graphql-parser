@@ -30,7 +30,7 @@ fn roundtrip2(filename: &str) {
     let target = format!("tests/queries/{}_canonical.graphql", filename);
     let mut f = File::open(&source).unwrap();
     f.read_to_string(&mut buf).unwrap();
-    let ast = parse_query(&buf).unwrap();
+    let ast = parse_query::<String>(&buf).unwrap().to_owned();
 
     let mut buf = String::with_capacity(1024);
     let mut f = File::open(&target).unwrap();
