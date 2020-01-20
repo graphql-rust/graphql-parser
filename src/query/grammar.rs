@@ -290,4 +290,13 @@ mod test {
     fn large_integer() {
         ast("{ a(x: 10000000000000000000000000000 }");
     }
+
+    #[test]
+    fn owned_query_from_borrowed_str() {
+        // Not a 'static str because we want to test non-static lifetimes work
+        let query = format!("query Test {{ fieldHere }}");
+
+        let _parsed: Document<'static, String> = parse_query(&query).unwrap();
+    }
+
 }
