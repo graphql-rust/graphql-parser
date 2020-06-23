@@ -12,6 +12,26 @@ pub struct Document<'a, T: Text<'a>>
     pub definitions: Vec<Definition<'a, T>>,
 }
 
+impl<'a> Document<'a, String> {
+    pub fn into_static(self) -> Document<'static, String> {
+        // To support both reference and owned values in the AST,
+        // all string data is represented with the ::common::Str<'a, T: Text<'a>>
+        // wrapper type.
+        // This type must carry the liftetime of the schema string,
+        // and is stored in a PhantomData value on the Str type.
+        // When using owned String types, the actual lifetime of
+        // the Ast nodes is 'static, since no references are kept,
+        // but the nodes will still carry the input lifetime.
+        // To continue working with Document<String> in a owned fasion
+        // the lifetime needs to be transmuted to 'static.
+        //
+        // This is safe because no references are present.
+        // Just the PhantomData lifetime reference is transmuted away.
+        unsafe { std::mem::transmute::<_, Document<'static, String>>(self) }
+    }
+}
+
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Definition<'a, T: Text<'a>> {
     SchemaDefinition(SchemaDefinition<'a, T>),
