@@ -405,6 +405,7 @@ pub struct DirectiveDefinition<'a, T: Text<'a>> {
     pub description: Option<String>,
     pub name: T::Value,
     pub arguments: Vec<InputValue<'a, T>>,
+    pub repeatable: bool,
     pub locations: Vec<DirectiveLocation>,
 }
 
@@ -417,6 +418,7 @@ where T: Text<'a>
             description: None,
             name,
             arguments: vec![],
+            repeatable: false,
             locations: vec![],
         }
     }

@@ -421,6 +421,9 @@ impl<'a, T> Displayable for DirectiveDefinition<'a, T>
         f.write("directive @");
         f.write(self.name.as_ref());
         format_arguments(&self.arguments, f);
+        if self.repeatable {
+            f.write(" repeatable");
+        }
         if !self.locations.is_empty() {
             f.write(" on ");
             let mut first = true;

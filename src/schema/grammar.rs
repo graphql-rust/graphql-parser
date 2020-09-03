@@ -474,11 +474,13 @@ pub fn directive_definition<'a, T>(input: &mut TokenStream<'a>)
         position(),
         ident("directive").and(punct("@")).with(name::<'a, T>()),
         parser(arguments_definition),
+        optional(ident("repeatable")),
         ident("on").with(parser(directive_locations)),
     )
-        .map(|(position, name, arguments, locations)| {
+        .map(|(position, name, arguments, repeatable, locations)| {
             DirectiveDefinition {
                 position, name, arguments, locations,
+                repeatable: repeatable.is_some(),
                 description: None,  // is filled in described_definition
             }
         })
