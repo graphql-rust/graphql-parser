@@ -11,14 +11,7 @@ fn roundtrip(filename: &str) {
     let path = format!("tests/schemas/{}.graphql", filename);
     let mut f = File::open(&path).unwrap();
     f.read_to_string(&mut buf).unwrap();
-    let ast = match parse_schema::<String>(&buf) {
-        Ok(ast) => ast,
-        Err(err) => {
-            println!("{:?}", err);
-            panic!()
-        }
-    };
-    // let ast = parse_schema::<String>(&buf).unwrap().to_owned();
+    let ast = parse_schema::<String>(&buf).unwrap().to_owned();
     assert_eq!(ast.to_string(), buf);
 }
 
