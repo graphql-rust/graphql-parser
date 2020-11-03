@@ -23,12 +23,15 @@ pub struct Token<'a> {
     pub value: &'a str,
 }
 
+const RECURSION_LIMIT: isize = 20;
+
 #[derive(Debug, PartialEq)]
 pub struct TokenStream<'a> {
     buf: &'a str,
     position: Pos,
     off: usize,
     next_state: Option<(usize, Token<'a>, usize, Pos)>,
+    recursion: isize,
 }
 
 impl TokenStream<'_> {
@@ -133,6 +136,7 @@ impl<'a> TokenStream<'a> {
             position: Pos { line: 1, column: 1 },
             off: 0,
             next_state: None,
+            recursion: 0,
         };
         me.skip_whitespace();
         me
@@ -148,6 +152,22 @@ impl<'a> TokenStream<'a> {
 
         match cur_char {
             '!' | '$' | ':' | '=' | '@' | '|' | '(' | ')' | '[' | ']' | '{' | '}' | '&' => {
+                match cur_char {
+                    '(' | '[' | '{' => {
+                        if self.recursion == RECURSION_LIMIT {
+                            return Err(Error::message_static_message("Recursion limit exceeded"));
+                        }
+                        self.recursion += 1;
+                    }
+                    ')' | ']' | '}' => {
+                        // Note that this can go below 0.
+                        // We don't report that as an error here but
+                        // it would be caught by the parser
+                        self.recursion -= 1;
+                    }
+                    _ => {}
+                }
+
                 self.position.column += 1;
                 self.off += 1;
 
