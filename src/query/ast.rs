@@ -19,7 +19,7 @@ impl<'a> Document<'a, String> {
         // To support both reference and owned values in the AST,
         // all string data is represented with the ::common::Str<'a, T: Text<'a>> 
         // wrapper type.
-        // This type must carry the liftetime of the query string,
+        // This type must carry the lifetime of the query string,
         // and is stored in a PhantomData value on the Str type.
         // When using owned String types, the actual lifetime of
         // the Ast nodes is 'static, since no references are kept,

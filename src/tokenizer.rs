@@ -32,6 +32,12 @@ pub struct TokenStream<'a> {
     next_state: Option<(usize, Token<'a>, usize, Pos)>,
 }
 
+impl TokenStream<'_> {
+    pub(crate) fn offset(&self) -> usize {
+        self.off
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Checkpoint {
     position: Pos,
