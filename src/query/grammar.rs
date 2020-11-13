@@ -290,4 +290,12 @@ mod test {
     fn large_integer() {
         ast("{ a(x: 10000000000000000000000000000 }");
     }
+
+    #[test]
+    fn recursion_too_deep() {
+        let query = format!("{}(b: {}{}){}", "{ a".repeat(30), "[".repeat(25), "]".repeat(25),  "}".repeat(30));
+        let result = parse_query::<&str>(&query);
+        let err = format!("{}", result.unwrap_err());
+        assert_eq!(&err, "query parse error: Parse error at 1:114\nExpected `]`\nRecursion limit exceeded\n")
+    }
 }

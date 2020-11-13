@@ -30,6 +30,7 @@ pub struct TokenStream<'a> {
     position: Pos,
     off: usize,
     next_state: Option<(usize, Token<'a>, usize, Pos)>,
+    recursion_limit: usize,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -53,7 +54,7 @@ impl<'a> StreamOnce for TokenStream<'a> {
             }
         }
         let old_pos = self.off;
-        let (kind, len) = self.peek_token()?;
+        let (kind, len) = self.take_token()?;
         let value = &self.buf[self.off-len..self.off];
         self.skip_whitespace();
         let token = Token { kind, value };
@@ -125,17 +126,34 @@ fn check_float(value: &str, exponent: Option<usize>, real: Option<usize>)
 
 impl<'a> TokenStream<'a> {
     pub fn new(s: &str) -> TokenStream {
+        Self::with_recursion_limit(s, 50)
+    }
+
+    /// Specify a limit to recursive parsing. Note that increasing the limit
+    /// from the default may represent a security issue since a maliciously
+    /// crafted input may cause a stack overflow, crashing the process.
+    pub(crate) fn with_recursion_limit(s: &str, recursion_limit: usize) -> TokenStream {
         let mut me = TokenStream {
             buf: s,
             position: Pos { line: 1, column: 1 },
             off: 0,
             next_state: None,
+            recursion_limit
         };
         me.skip_whitespace();
         me
     }
 
-    fn peek_token(&mut self)
+    /// Convenience for the common case where a token does
+    /// not span multiple lines. Infallible.
+    #[inline]
+    fn advance_token<T>(&mut self, kind: Kind, size: usize) -> Result<(Kind, usize), T> {
+        self.position.column += size;
+        self.off += size;
+        Ok((kind, size))
+    }
+
+    fn take_token(&mut self)
         -> Result<(Kind, usize), Error<Token<'a>, Token<'a>>>
     {
         use self::Kind::*;
@@ -146,19 +164,32 @@ impl<'a> TokenStream<'a> {
         };
 
         match cur_char {
-            '!' | '$' | ':' | '=' | '@' | '|' |
-            '(' | ')' | '[' | ']' | '{' | '}' | '&' => {
-                self.position.column += 1;
-                self.off += 1;
+            '(' | '[' | '{' => {
+                // Check for recursion limit
+                self.recursion_limit = self.recursion_limit
+                    .checked_sub(1)
+                    .ok_or_else(|| Error::message_static_message("Recursion limit exceeded"))?;
 
-                Ok((Punctuator, 1))
+                self.advance_token(Punctuator, 1)
+            },
+            ')' | ']' | '}' => {
+                // Notes on exceptional cases:
+                // recursion_limit may exceed the original value specified
+                // when constructing the Tokenizer. It may at first
+                // seem like this would be a good place to handle that,
+                // but instead this code allows this token to propagate up
+                // to the parser which is better equipped to make specific
+                // error messages about unmatched pairs. 
+                // The case where recursion limit would overflow but instead
+                // saturates is just a specific case of the more general
+                // occurrence above.
+                self.recursion_limit = self.recursion_limit.saturating_add(1);
+                self.advance_token(Punctuator, 1)
             }
+            '!' | '$' | ':' | '=' | '@' | '|' | '&' => self.advance_token(Punctuator, 1),
             '.' => {
                 if iter.as_str().starts_with("..") {
-                    self.position.column += 3;
-                    self.off += 3;
-
-                    Ok((Punctuator, 3))
+                    self.advance_token(Punctuator, 3)
                 } else {
                     Err(
                         Error::unexpected_message(
@@ -172,11 +203,7 @@ impl<'a> TokenStream<'a> {
                 while let Some((idx, cur_char)) = iter.next() {
                     match cur_char {
                         '_' | 'a'..='z' | 'A'..='Z' | '0'..='9' => continue,
-                        _ => {
-                            self.position.column += idx;
-                            self.off += idx;
-                            return Ok((Name, idx));
-                        }
+                        _ => return self.advance_token(Name, idx),
                     }
                 }
                 let len = self.buf.len() - self.off;
@@ -227,10 +254,7 @@ impl<'a> TokenStream<'a> {
                             )
                         );
                     }
-                    self.position.column += len;
-                    self.off += len;
-
-                    Ok((IntValue, len))
+                    self.advance_token(IntValue, len)
                 }
             }
             '"' => {
