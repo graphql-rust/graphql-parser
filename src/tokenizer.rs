@@ -33,6 +33,12 @@ pub struct TokenStream<'a> {
     recursion_limit: usize,
 }
 
+impl TokenStream<'_> {
+    pub(crate) fn offset(&self) -> usize {
+        self.off
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Checkpoint {
     position: Pos,
