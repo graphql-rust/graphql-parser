@@ -35,6 +35,7 @@ fn roundtrip2(filename: &str) {
 #[test] fn minimal_type() { roundtrip("minimal_type"); }
 #[test] fn implements() { roundtrip("implements"); }
 #[test] fn implements_amp() { roundtrip2("implements_amp"); }
+#[test] fn implements_interface() { roundtrip("implements_interface"); }
 #[test] fn simple_object() { roundtrip("simple_object"); }
 #[test] fn extend_object() { roundtrip("extend_object"); }
 #[test] fn interface() { roundtrip("interface"); }

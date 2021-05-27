@@ -182,6 +182,7 @@ pub struct InterfaceType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    pub implements_interfaces: Vec<T::Value>,
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<Field<'a, T>>,
 }
@@ -194,6 +195,7 @@ impl<'a, T> InterfaceType<'a, T>
             position: Pos::default(),
             description: None,
             name,
+            implements_interfaces: vec![],
             directives: vec![],
             fields: vec![],
         }
@@ -204,6 +206,7 @@ impl<'a, T> InterfaceType<'a, T>
 pub struct InterfaceTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
+    pub implements_interfaces: Vec<T::Value>,
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<Field<'a, T>>,
 }
@@ -215,6 +218,7 @@ where T: Text<'a>
         Self {
             position: Pos::default(),
             name,
+            implements_interfaces: vec![],
             directives: vec![],
             fields: vec![],
         }

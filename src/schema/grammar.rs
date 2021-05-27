@@ -241,12 +241,15 @@ pub fn interface_type<'a, T>(input: &mut TokenStream<'a>)
     (
         position(),
         ident("interface").with(name::<'a, T>()),
+        parser(implements_interfaces::<T>),
         parser(directives),
         parser(fields),
     )
-        .map(|(position, name, directives, fields)| {
+        .map(|(position, name, interfaces, directives, fields)| {
             InterfaceType {
-                position, name, directives, fields,
+                position, name,
+                implements_interfaces: interfaces,
+                directives, fields,
                 description: None,  // is filled in described_definition
             }
         })
@@ -260,10 +263,11 @@ pub fn interface_type_extension<'a, T>(input: &mut TokenStream<'a>)
     (
         position(),
         ident("interface").with(name::<'a, T>()),
+        parser(implements_interfaces::<T>),
         parser(directives),
         parser(fields),
     )
-        .flat_map(|(position, name, directives, fields)| {
+        .flat_map(|(position, name, interfaces, directives, fields)| {
             if directives.is_empty() && fields.is_empty() {
                 let mut e = Errors::empty(position);
                 e.add_error(Error::expected_static_message(
@@ -272,7 +276,9 @@ pub fn interface_type_extension<'a, T>(input: &mut TokenStream<'a>)
                 return Err(e);
             }
             Ok(InterfaceTypeExtension {
-                position, name, directives, fields,
+                position, name,
+                implements_interfaces: interfaces,
+                directives, fields,
             })
         })
         .parse_stream(input)
