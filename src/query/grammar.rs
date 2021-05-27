@@ -193,7 +193,7 @@ pub fn definition<'a, S>(input: &mut TokenStream<'a>)
 }
 
 /// Parses a piece of query language and returns an AST
-pub fn parse_query<'a, S>(s: &'a str) -> Result<Document<'a, S>, ParseError> 
+pub fn parse_query<'a, S>(s: &'a str) -> Result<Document<'a, S>, ParseError>
     where S: Text<'a>,
 {
     let mut tokens = TokenStream::new(s);
@@ -329,7 +329,8 @@ mod test {
         let err = format!("{}", err);
         assert_eq!(err, "query parse error: Parse error at 1:1\nUnexpected `where[Name]`\nExpected `{`, `query`, `mutation`, `subscription` or `fragment`\n");
     }
-  
+
+    #[test]
     fn recursion_too_deep() {
         let query = format!("{}(b: {}{}){}", "{ a".repeat(30), "[".repeat(25), "]".repeat(25),  "}".repeat(30));
         let result = parse_query::<&str>(&query);
