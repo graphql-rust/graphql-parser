@@ -44,6 +44,7 @@ fn roundtrip2(filename: &str) {
 #[test] fn query_arguments() { roundtrip("query_arguments"); }
 #[test] fn query_directive() { roundtrip("query_directive"); }
 #[test] fn mutation_directive() { roundtrip("mutation_directive"); }
+#[test] fn mutation_nameless_vars() { roundtrip("mutation_nameless_vars"); }
 #[test] fn subscription_directive() { roundtrip("subscription_directive"); }
 #[test] fn string_literal() { roundtrip("string_literal"); }
 #[test] fn triple_quoted_literal() { roundtrip("triple_quoted_literal"); }
