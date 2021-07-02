@@ -61,45 +61,45 @@ use super::ast::*;
 ///
 /// See [module docs](/graphql_parser/query/query_visitor/index.html) for more info.
 pub trait QueryVisitor<'ast> {
-    fn visit_document(&mut self, node: &'ast Document) {}
+    fn visit_document(&mut self, node: &'ast Document<'ast, &'ast str>) {}
 
-    fn visit_definition(&mut self, node: &'ast Definition) {}
+    fn visit_definition(&mut self, node: &'ast Definition<'ast, &'ast str>) {}
 
-    fn visit_fragment_definition(&mut self, node: &'ast FragmentDefinition) {}
+    fn visit_fragment_definition(&mut self, node: &'ast FragmentDefinition<'ast, &'ast str>) {}
 
-    fn visit_operation_definition(&mut self, node: &'ast OperationDefinition) {}
+    fn visit_operation_definition(&mut self, node: &'ast OperationDefinition<'ast, &'ast str>) {}
 
-    fn visit_query(&mut self, node: &'ast Query) {}
+    fn visit_query(&mut self, node: &'ast Query<'ast, &'ast str>) {}
 
-    fn visit_mutation(&mut self, node: &'ast Mutation) {}
+    fn visit_mutation(&mut self, node: &'ast Mutation<'ast, &'ast str>) {}
 
-    fn visit_subscription(&mut self, node: &'ast Subscription) {}
+    fn visit_subscription(&mut self, node: &'ast Subscription<'ast, &'ast str>) {}
 
-    fn visit_selection_set(&mut self, node: &'ast SelectionSet) {}
+    fn visit_selection_set(&mut self, node: &'ast SelectionSet<'ast, &'ast str>) {}
 
-    fn visit_variable_definition(&mut self, node: &'ast VariableDefinition) {}
+    fn visit_variable_definition(&mut self, node: &'ast VariableDefinition<'ast, &'ast str>) {}
 
-    fn visit_selection(&mut self, node: &'ast Selection) {}
+    fn visit_selection(&mut self, node: &'ast Selection<'ast, &'ast str>) {}
 
-    fn visit_field(&mut self, node: &'ast Field) {}
+    fn visit_field(&mut self, node: &'ast Field<'ast, &'ast str>) {}
 
-    fn visit_fragment_spread(&mut self, node: &'ast FragmentSpread) {}
+    fn visit_fragment_spread(&mut self, node: &'ast FragmentSpread<'ast, &'ast str>) {}
 
-    fn visit_inline_fragment(&mut self, node: &'ast InlineFragment) {}
+    fn visit_inline_fragment(&mut self, node: &'ast InlineFragment<'ast, &'ast str>) {}
 }
 
 
 /// Walk a query syntax tree and call the visitor methods for each type of node.
 ///
 /// This function is how you should initiate a visitor.
-pub fn walk_document<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Document) {
+pub fn walk_document<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Document<'ast, &'ast str>) {
     visitor.visit_document(node);
     for def in &node.definitions {
         walk_definition(visitor, def);
     }
 }
 
-fn walk_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Definition) {
+fn walk_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Definition<'ast, &'ast str>) {
     use super::ast::Definition::*;
 
     visitor.visit_definition(node);
@@ -115,12 +115,12 @@ fn walk_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Def
     }
 }
 
-fn walk_fragment_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast FragmentDefinition) {
+fn walk_fragment_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast FragmentDefinition<'ast, &'ast str>) {
     visitor.visit_fragment_definition(node);
     walk_selection_set(visitor, &node.selection_set);
 }
 
-fn walk_operation_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast OperationDefinition) {
+fn walk_operation_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast OperationDefinition<'ast, &'ast str>) {
     use super::ast::OperationDefinition::*;
 
     visitor.visit_operation_definition(node);
@@ -144,7 +144,7 @@ fn walk_operation_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node:
     }
 }
 
-fn walk_query<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Query) {
+fn walk_query<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Query<'ast, &'ast str>) {
     visitor.visit_query(node);
 
     for var_def in &node.variable_definitions {
@@ -156,7 +156,7 @@ fn walk_query<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Query) {
     walk_selection_set(visitor, &node.selection_set);
 }
 
-fn walk_mutation<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Mutation) {
+fn walk_mutation<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Mutation<'ast, &'ast str>) {
     visitor.visit_mutation(node);
 
     for var_def in &node.variable_definitions {
@@ -168,7 +168,7 @@ fn walk_mutation<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Mutat
     walk_selection_set(visitor, &node.selection_set);
 }
 
-fn walk_subscription<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Subscription) {
+fn walk_subscription<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Subscription<'ast, &'ast str>) {
     visitor.visit_subscription(node);
 
     for var_def in &node.variable_definitions {
@@ -180,7 +180,7 @@ fn walk_subscription<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast S
     walk_selection_set(visitor, &node.selection_set);
 }
 
-fn walk_selection_set<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast SelectionSet) {
+fn walk_selection_set<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast SelectionSet<'ast, &'ast str>) {
     visitor.visit_selection_set(node);
 
     for selection in &node.items {
@@ -189,11 +189,11 @@ fn walk_selection_set<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast 
     }
 }
 
-fn walk_variable_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast VariableDefinition) {
+fn walk_variable_definition<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast VariableDefinition<'ast, &'ast str>) {
     visitor.visit_variable_definition(node)
 }
 
-fn walk_selection<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Selection) {
+fn walk_selection<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Selection<'ast, &'ast str>) {
     use super::ast::Selection::*;
 
     visitor.visit_selection(node);
@@ -213,15 +213,15 @@ fn walk_selection<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Sele
     }
 }
 
-fn walk_field<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Field) {
+fn walk_field<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast Field<'ast, &'ast str>) {
     visitor.visit_field(node)
 }
 
-fn walk_fragment_spread<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast FragmentSpread) {
+fn walk_fragment_spread<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast FragmentSpread<'ast, &'ast str>) {
     visitor.visit_fragment_spread(node)
 }
 
-fn walk_inline_fragment<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast InlineFragment) {
+fn walk_inline_fragment<'ast, V: QueryVisitor<'ast>>(visitor: &mut V, node: &'ast InlineFragment<'ast, &'ast str>) {
     visitor.visit_inline_fragment(node);
     walk_selection_set(visitor, &node.selection_set);
 }

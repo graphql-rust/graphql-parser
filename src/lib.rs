@@ -95,7 +95,6 @@
 
 
 mod common;
-mod validation;
 
 #[macro_use]
 mod format;
