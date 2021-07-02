@@ -2,11 +2,7 @@
 //! of the current field and type definitions at any point in a GraphQL document
 //! AST during a recursive descent by calling `enter(node)` and `leave(node)`.
 
-use crate::{
-    common::{CompositeType, InputType},
-    query::Field,
-    schema::{Directive, EnumValue, SchemaDefinition, Text, Type, Value},
-};
+use crate::{common::{CompositeType, InputType}, query::{Field, query_visitor::QueryVisitor}, schema::{Directive, EnumValue, SchemaDefinition, Text, Type, Value}};
 pub struct TypeInfo<'ast, T: Text<'ast>> {
     schema: SchemaDefinition<'ast, T>,
     type_stack: Vec<Option<Type<'ast, T>>>,
@@ -33,4 +29,44 @@ impl<'ast, T: Text<'ast>> TypeInfo<'ast, T> {
             enum_value: None,
         }
     }
+}
+
+impl<'ast> QueryVisitor<'ast> for TypeInfo<'ast, &'ast str> {
+
+}
+
+
+#[cfg(test)]
+mod type_info_tests {
+  const TEST_SCHEMA: &str = r#"
+    interface Pet {
+      name: String
+    }
+  
+    type Dog implements Pet {
+      name: String
+    }
+  
+    type Cat implements Pet {
+      name: String
+    }
+  
+    type Human {
+      name: String
+      pets: [Pet]
+    }
+  
+    type Alien {
+      name(surname: Boolean): String
+    }
+  
+    type QueryRoot {
+      human(id: ID): Human
+      alien: Alien
+    }
+  
+    schema {
+      query: QueryRoot
+    }
+  "#;
 }
