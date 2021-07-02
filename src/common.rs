@@ -5,6 +5,7 @@ use combine::easy::Error;
 use combine::error::StreamError;
 use combine::combinator::{many, many1, optional, position, choice};
 
+use crate::schema::{EnumType, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType};
 use crate::tokenizer::{Kind as T, Token, TokenStream};
 use crate::helpers::{punct, ident, kind, name};
 use crate::position::Pos;
@@ -64,6 +65,23 @@ pub enum Type<'a, T: Text<'a>> {
     ListType(Box<Type<'a, T>>),
     NonNullType(Box<Type<'a, T>>),
 }
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum CompositeType<'a, T: Text<'a>> {
+    Object(ObjectType<'a, T>),
+    Interface(InterfaceType<'a, T>),
+    Union(UnionType<'a, T>),
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum InputType<'a, T: Text<'a>> {
+    Scalar(ScalarType<'a, T>),
+    Enum(EnumType<'a, T>),
+    InputObject(InputObjectType<'a, T>),
+    List(Box<InputType<'a, T>>),
+    NonNullType(Box<InputType<'a, T>>),
+}
+
 
 impl Number {
     /// Returns a number as i64 if it fits the type

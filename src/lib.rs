@@ -95,6 +95,8 @@
 
 
 mod common;
+mod validation;
+
 #[macro_use]
 mod format;
 mod position;
@@ -102,6 +104,7 @@ mod tokenizer;
 mod helpers;
 pub mod query;
 pub mod schema;
+pub mod validation;
 
 pub use crate::query::parse_query;
 pub use crate::schema::parse_schema;
