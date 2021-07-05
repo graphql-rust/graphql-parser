@@ -64,45 +64,45 @@ use super::ast::*;
 ///
 /// See [module docs](/graphql_parser/schema/schema_visitor/index.html) for more info.
 pub trait SchemaVisitor<'ast> {
-    fn visit_document(&mut self, doc: &'ast Document) {}
+    fn visit_document(&mut self, doc: &'ast Document<'ast, &'ast str>) {}
 
-    fn visit_schema_definition(&mut self, node: &'ast SchemaDefinition) {}
+    fn visit_schema_definition(&mut self, node: &'ast SchemaDefinition<'ast, &'ast str>) {}
 
-    fn visit_directive_definition(&mut self, node: &'ast DirectiveDefinition) {}
+    fn visit_directive_definition(&mut self, node: &'ast DirectiveDefinition<'ast, &'ast str>) {}
 
-    fn visit_type_definition(&mut self, node: &'ast TypeDefinition) {}
+    fn visit_type_definition(&mut self, node: &'ast TypeDefinition<'ast, &'ast str>) {}
 
-    fn visit_scalar_type(&mut self, node: &'ast ScalarType) {}
+    fn visit_scalar_type(&mut self, node: &'ast ScalarType<'ast, &'ast str>) {}
 
-    fn visit_object_type(&mut self, node: &'ast ObjectType) {}
+    fn visit_object_type(&mut self, node: &'ast ObjectType<'ast, &'ast str>) {}
 
-    fn visit_interface_type(&mut self, node: &'ast InterfaceType) {}
+    fn visit_interface_type(&mut self, node: &'ast InterfaceType<'ast, &'ast str>) {}
 
-    fn visit_union_type(&mut self, node: &'ast UnionType) {}
+    fn visit_union_type(&mut self, node: &'ast UnionType<'ast, &'ast str>) {}
 
-    fn visit_enum_type(&mut self, node: &'ast EnumType) {}
+    fn visit_enum_type(&mut self, node: &'ast EnumType<'ast, &'ast str>) {}
 
-    fn visit_input_object_type(&mut self, node: &'ast InputObjectType) {}
+    fn visit_input_object_type(&mut self, node: &'ast InputObjectType<'ast, &'ast str>) {}
 
-    fn visit_type_extension(&mut self, node: &'ast TypeExtension) {}
+    fn visit_type_extension(&mut self, node: &'ast TypeExtension<'ast, &'ast str>) {}
 
-    fn visit_scalar_type_extension(&mut self, node: &'ast ScalarTypeExtension) {}
+    fn visit_scalar_type_extension(&mut self, node: &'ast ScalarTypeExtension<'ast, &'ast str>) {}
 
-    fn visit_object_type_extension(&mut self, node: &'ast ObjectTypeExtension) {}
+    fn visit_object_type_extension(&mut self, node: &'ast ObjectTypeExtension<'ast, &'ast str>) {}
 
-    fn visit_interface_type_extension(&mut self, node: &'ast InterfaceTypeExtension) {}
+    fn visit_interface_type_extension(&mut self, node: &'ast InterfaceTypeExtension<'ast, &'ast str>) {}
 
-    fn visit_union_type_extension(&mut self, node: &'ast UnionTypeExtension) {}
+    fn visit_union_type_extension(&mut self, node: &'ast UnionTypeExtension<'ast, &'ast str>) {}
 
-    fn visit_enum_type_extension(&mut self, node: &'ast EnumTypeExtension) {}
+    fn visit_enum_type_extension(&mut self, node: &'ast EnumTypeExtension<'ast, &'ast str>) {}
 
-    fn visit_input_object_type_extension(&mut self, node: &'ast InputObjectTypeExtension) {}
+    fn visit_input_object_type_extension(&mut self, node: &'ast InputObjectTypeExtension<'ast, &'ast str>) {}
 }
 
 /// Walk a schema syntax tree and call the visitor methods for each type of node.
 ///
 /// This function is how you should initiate a visitor.
-pub fn walk_document<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, doc: &'ast Document) {
+pub fn walk_document<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, doc: &'ast Document<'ast, &'ast str>) {
     use super::ast::Definition::*;
 
     for def in &doc.definitions {
@@ -127,11 +127,11 @@ pub fn walk_document<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, doc: &'ast D
     }
 }
 
-fn walk_schema_definition<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast SchemaDefinition) {}
+fn walk_schema_definition<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast SchemaDefinition<'ast, &'ast str>) {}
 
-fn walk_directive_definition<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast DirectiveDefinition) {}
+fn walk_directive_definition<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast DirectiveDefinition<'ast, &'ast str>) {}
 
-fn walk_type_definition<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast TypeDefinition) {
+fn walk_type_definition<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast TypeDefinition<'ast, &'ast str>) {
     use super::ast::TypeDefinition::*;
 
     match node {
@@ -162,19 +162,19 @@ fn walk_type_definition<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'a
     }
 }
 
-fn walk_scalar_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ScalarType) {}
+fn walk_scalar_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ScalarType<'ast, &'ast str>) {}
 
-fn walk_object_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ObjectType) {}
+fn walk_object_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ObjectType<'ast, &'ast str>) {}
 
-fn walk_interface_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InterfaceType) {}
+fn walk_interface_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InterfaceType<'ast, &'ast str>) {}
 
-fn walk_union_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast UnionType) {}
+fn walk_union_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast UnionType<'ast, &'ast str>) {}
 
-fn walk_enum_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast EnumType) {}
+fn walk_enum_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast EnumType<'ast, &'ast str>) {}
 
-fn walk_input_object_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InputObjectType) {}
+fn walk_input_object_type<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InputObjectType<'ast, &'ast str>) {}
 
-fn walk_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast TypeExtension) {
+fn walk_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast TypeExtension<'ast, &'ast str>) {
     use super::ast::TypeExtension::*;
 
     match node {
@@ -205,14 +205,14 @@ fn walk_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'as
     }
 }
 
-fn walk_scalar_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ScalarTypeExtension) {}
+fn walk_scalar_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ScalarTypeExtension<'ast, &'ast str>) {}
 
-fn walk_object_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ObjectTypeExtension) {}
+fn walk_object_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast ObjectTypeExtension<'ast, &'ast str>) {}
 
-fn walk_interface_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InterfaceTypeExtension) {}
+fn walk_interface_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InterfaceTypeExtension<'ast, &'ast str>) {}
 
-fn walk_union_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast UnionTypeExtension) {}
+fn walk_union_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast UnionTypeExtension<'ast, &'ast str>) {}
 
-fn walk_enum_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast EnumTypeExtension) {}
+fn walk_enum_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast EnumTypeExtension<'ast, &'ast str>) {}
 
-fn walk_input_object_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InputObjectTypeExtension) {}
+fn walk_input_object_type_extension<'ast, V: SchemaVisitor<'ast>>(visitor: &mut V, node: &'ast InputObjectTypeExtension<'ast, &'ast str>) {}
