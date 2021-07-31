@@ -21,7 +21,8 @@
 //!
 //! ```rust
 //! # extern crate graphql_parser;
-//! use graphql_parser::query::{parse_query, ParseError};
+//! use graphql_parser::query::parse_query;
+//! use graphql_parser::ParseError;
 //!
 //! # fn parse() -> Result<(), ParseError> {
 //! let ast = parse_query::<&str>("query MyQuery { field1, field2 }")?;
@@ -44,7 +45,8 @@
 //!
 //! ```rust
 //! # extern crate graphql_parser;
-//! use graphql_parser::schema::{parse_schema, ParseError};
+//! use graphql_parser::schema::parse_schema;
+//! use graphql_parser::ParseError;
 //!
 //! # fn parse() -> Result<(), ParseError> {
 //! let ast = parse_schema::<String>(r#"
@@ -91,19 +93,22 @@
 //!
 #![warn(missing_debug_implementations)]
 
-#[cfg(test)] #[macro_use] extern crate pretty_assertions;
-
+#[cfg(test)]
+#[macro_use]
+extern crate pretty_assertions;
 
 mod common;
 #[macro_use]
 mod format;
-mod position;
-mod tokenizer;
+pub mod error;
 mod helpers;
+mod position;
 pub mod query;
 pub mod schema;
+mod tokenizer;
 
+pub use crate::error::ParseError;
+pub use crate::format::Style;
+pub use crate::position::Pos;
 pub use crate::query::parse_query;
 pub use crate::schema::parse_schema;
-pub use crate::position::Pos;
-pub use crate::format::Style;

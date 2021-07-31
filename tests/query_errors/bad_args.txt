@@ -2,6 +2,6 @@ query MyQuery {
   field1([something])
 }
 ---
-query parse error: Parse error at 2:10
+Parse error at 2:10
 Unexpected `[[Punctuator]`
 Expected `Name`
