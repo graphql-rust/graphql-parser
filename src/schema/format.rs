@@ -1,9 +1,9 @@
 use std::fmt;
 
-use ::format::{Displayable, Formatter, Style, format_directives};
-use ::common::Text;
+use crate::format::{Displayable, Formatter, Style, format_directives};
+use crate::common::Text;
 
-use schema::ast::*;
+use crate::schema::ast::*;
 
 
 impl<'a, T> Document<'a, T> 
@@ -421,6 +421,9 @@ impl<'a, T> Displayable for DirectiveDefinition<'a, T>
         f.write("directive @");
         f.write(self.name.as_ref());
         format_arguments(&self.arguments, f);
+        if self.repeatable {
+            f.write(" repeatable");
+        }
         if !self.locations.is_empty() {
             f.write(" on ");
             let mut first = true;

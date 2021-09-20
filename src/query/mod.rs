@@ -6,6 +6,6 @@ mod format;
 mod grammar;
 
 
-pub use self::grammar::parse_query;
+pub use self::grammar::{parse_query, consume_definition};
 pub use self::error::ParseError;
 pub use self::ast::*;

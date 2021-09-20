@@ -5,8 +5,8 @@
 //!
 //! [graphql grammar]: http://facebook.github.io/graphql/October2016/#sec-Appendix-Grammar-Summary
 //!
-use position::Pos;
-pub use common::{Directive, Number, Value, Text, Type};
+use crate::position::Pos;
+pub use crate::common::{Directive, Number, Value, Text, Type};
 
 /// Root of query data
 #[derive(Debug, Clone, PartialEq)]
@@ -19,7 +19,7 @@ impl<'a> Document<'a, String> {
         // To support both reference and owned values in the AST,
         // all string data is represented with the ::common::Str<'a, T: Text<'a>> 
         // wrapper type.
-        // This type must carry the liftetime of the query string,
+        // This type must carry the lifetime of the query string,
         // and is stored in a PhantomData value on the Str type.
         // When using owned String types, the actual lifetime of
         // the Ast nodes is 'static, since no references are kept,

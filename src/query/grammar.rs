@@ -1,12 +1,12 @@
 use combine::{parser, ParseResult, Parser};
 use combine::combinator::{many1, eof, optional, position};
 
-use common::{Directive};
-use common::{directives, arguments, default_value, parse_type};
-use tokenizer::{TokenStream};
-use helpers::{punct, ident, name};
-use query::error::{ParseError};
-use query::ast::*;
+use crate::common::{Directive};
+use crate::common::{directives, arguments, default_value, parse_type};
+use crate::tokenizer::{TokenStream};
+use crate::helpers::{punct, ident, name};
+use crate::query::error::{ParseError};
+use crate::query::ast::*;
 
 pub fn field<'a, S>(input: &mut TokenStream<'a>)
     -> ParseResult<Field<'a, S>, TokenStream<'a>>
@@ -206,11 +206,20 @@ pub fn parse_query<'a, S>(s: &'a str) -> Result<Document<'a, S>, ParseError>
     Ok(doc)
 }
 
+/// Parses a single ExecutableDefinition and returns an AST as well as the
+/// remainder of the input which is unparsed
+pub fn consume_definition<'a, S>(s: &'a str) -> Result<(Definition<'a, S>, &'a str), ParseError> where S: Text<'a> {
+    let tokens = TokenStream::new(s);
+    let (doc, tokens) = parser(definition).parse(tokens)?;
+
+    Ok((doc, &s[tokens.offset()..]))
+}
+
 #[cfg(test)]
 mod test {
-    use position::Pos;
-    use query::grammar::*;
-    use super::parse_query;
+    use crate::position::Pos;
+    use crate::query::grammar::*;
+    use super::{parse_query, consume_definition};
 
     fn ast(s: &str) -> Document<String> {
         parse_query::<String>(&s).unwrap().to_owned()
@@ -289,5 +298,42 @@ mod test {
     #[should_panic(expected="number too large")]
     fn large_integer() {
         ast("{ a(x: 10000000000000000000000000000 }");
+    }
+
+    #[test]
+    fn consume_single_query() {
+        let (query, remainder) = consume_definition::<String>("query { a } query { b }").unwrap();
+        assert!(matches!(query, Definition::Operation(_)));
+        assert_eq!(remainder, "query { b }");
+    }
+
+    #[test]
+    fn consume_full_text() {
+        let (query, remainder) = consume_definition::<String>("query { a }").unwrap();
+        assert!(matches!(query, Definition::Operation(_)));
+        assert_eq!(remainder, "");
+    }
+
+    #[test]
+    fn consume_single_query_preceding_non_graphql() {
+        let (query, remainder) =
+            consume_definition::<String>("query { a } where a > 1 => 10.0").unwrap();
+        assert!(matches!(query, Definition::Operation(_)));
+        assert_eq!(remainder, "where a > 1 => 10.0");
+    }
+
+    #[test]
+    fn consume_fails_without_operation() {
+        let err = consume_definition::<String>("where a > 1 => 10.0")
+            .expect_err("Expected parse to fail with an error");
+        let err = format!("{}", err);
+        assert_eq!(err, "query parse error: Parse error at 1:1\nUnexpected `where[Name]`\nExpected `{`, `query`, `mutation`, `subscription` or `fragment`\n");
+    }
+  
+    fn recursion_too_deep() {
+        let query = format!("{}(b: {}{}){}", "{ a".repeat(30), "[".repeat(25), "]".repeat(25),  "}".repeat(30));
+        let result = parse_query::<&str>(&query);
+        let err = format!("{}", result.unwrap_err());
+        assert_eq!(&err, "query parse error: Parse error at 1:114\nExpected `]`\nRecursion limit exceeded\n")
     }
 }
