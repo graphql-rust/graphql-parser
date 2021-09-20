@@ -21,8 +21,7 @@ fn roundtrip(filename: &str, style: &Style) {
     let path = format!("tests/queries/{}.graphql", filename);
     let mut f = File::open(&path).unwrap();
     f.read_to_string(&mut buf).unwrap();
-    let ast = parse_query(&buf).unwrap();
-    println!("{}", ast.format(style));
+    let ast = parse_query::<String>(&buf).unwrap().to_owned();
     assert_eq!(ast.format(style), buf);
 }
 
