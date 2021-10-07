@@ -1,6 +1,6 @@
 use std::marker::PhantomData;
 
-use combine::{Parser, ConsumedResult, satisfy, StreamOnce};
+use combine::{Parser, ParseResult, satisfy, StreamOnce};
 use combine::error::{Tracked};
 use combine::stream::easy::{Error, Errors, Info};
 
@@ -17,7 +17,7 @@ pub struct TokenMatch<'a> {
 }
 
 #[derive(Debug, Clone)]
-pub struct NameMatch<'a, T> 
+pub struct NameMatch<'a, T>
     where T: Text<'a>
 {
     phantom: PhantomData<&'a T>,
@@ -38,7 +38,7 @@ pub fn kind<'x>(kind: Kind) -> TokenMatch<'x> {
     }
 }
 
-pub fn name<'a, T>() -> NameMatch<'a, T> 
+pub fn name<'a, T>() -> NameMatch<'a, T>
     where T: Text<'a>
 {
     NameMatch {
@@ -46,21 +46,16 @@ pub fn name<'a, T>() -> NameMatch<'a, T>
     }
 }
 
-impl<'a> Parser for TokenMatch<'a> {
-    type Input = TokenStream<'a>;
+impl<'a> Parser<TokenStream<'a>> for TokenMatch<'a> {
     type Output = Token<'a>;
     type PartialState = ();
 
     #[inline]
-    fn parse_lazy(&mut self, input: &mut Self::Input)
-        -> ConsumedResult<Self::Output, Self::Input>
-    {
+    fn parse_lazy(&mut self, input: &mut TokenStream<'a>) -> ParseResult<Self::Output, <TokenStream<'a> as StreamOnce>::Error> {
         satisfy(|c: Token<'a>| c.kind == self.kind).parse_lazy(input)
     }
 
-    fn add_error(&mut self,
-        error: &mut Tracked<Errors<Token<'a>, Token<'a>, Pos>>)
-    {
+    fn add_error(&mut self, error: &mut Tracked<Errors<Token<'a>, Token<'a>, Pos>>) {
         error.error.add_error(Error::Expected(Info::Owned(
             format!("{:?}", self.kind))));
     }
@@ -82,38 +77,32 @@ pub fn ident<'s>(value: &'static str) -> Value<'s> {
     }
 }
 
-impl<'a> Parser for Value<'a> {
-    type Input = TokenStream<'a>;
+impl<'a> Parser<TokenStream<'a>> for Value<'a> {
     type Output = Token<'a>;
     type PartialState = ();
 
     #[inline]
-    fn parse_lazy(&mut self, input: &mut Self::Input)
-        -> ConsumedResult<Self::Output, Self::Input>
-    {
+    fn parse_lazy(&mut self, input: &mut TokenStream<'a>) -> ParseResult<Self::Output, <TokenStream<'a> as StreamOnce>::Error> {
         satisfy(|c: Token<'a>| {
             c.kind == self.kind && c.value == self.value
         }).parse_lazy(input)
     }
 
     fn add_error(&mut self,
-        error: &mut Tracked<<Self::Input as StreamOnce>::Error>)
+        error: &mut Tracked<<TokenStream<'a> as StreamOnce>::Error>)
     {
-        error.error.add_error(Error::Expected(Info::Borrowed(self.value)));
+        error.error.add_error(Error::Expected(Info::Static(self.value)));
     }
 }
 
-impl<'a, S> Parser for NameMatch<'a, S> 
+impl<'a, S> Parser<TokenStream<'a>> for NameMatch<'a, S>
     where S: Text<'a>,
 {
-    type Input = TokenStream<'a>;
     type Output = S::Value;
     type PartialState = ();
 
     #[inline]
-    fn parse_lazy(&mut self, input: &mut Self::Input)
-        -> ConsumedResult<Self::Output, Self::Input>
-    {
+    fn parse_lazy(&mut self, input: &mut TokenStream<'a>) -> ParseResult<Self::Output, <TokenStream<'a> as StreamOnce>::Error> {
         satisfy(|c: Token<'a>| c.kind == Kind::Name)
         .map(|t: Token<'a>| -> S::Value { S::Value::from(t.value) } )
         .parse_lazy(input)
@@ -122,6 +111,6 @@ impl<'a, S> Parser for NameMatch<'a, S>
     fn add_error(&mut self,
         error: &mut Tracked<Errors<Token<'a>, Token<'a>, Pos>>)
     {
-        error.error.add_error(Error::Expected(Info::Borrowed("Name")));
+        error.error.add_error(Error::Expected(Info::Static("Name")));
     }
 }

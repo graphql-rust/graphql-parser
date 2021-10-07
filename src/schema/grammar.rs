@@ -1,8 +1,6 @@
-use combine::{parser, ParseResult, Parser};
+use combine::{parser, StdParseResult, Parser, sep_by1, many, many1, eof, optional, position, choice};
 use combine::easy::{Error, Errors};
 use combine::error::StreamError;
-use combine::combinator::{many, many1, eof, optional, position, choice};
-use combine::combinator::{sep_by1};
 
 use crate::tokenizer::{Kind as T, Token, TokenStream};
 use crate::helpers::{punct, ident, kind, name};
@@ -11,8 +9,7 @@ use crate::schema::error::{ParseError};
 use crate::schema::ast::*;
 
 
-pub fn schema<'a, S>(input: &mut TokenStream<'a>)
-    -> ParseResult<SchemaDefinition<'a, S>, TokenStream<'a>>
+pub fn schema<'a, S>(input: &mut TokenStream<'a>) -> StdParseResult<SchemaDefinition<'a, S>, TokenStream<'a>>
     where S: Text<'a>,
 {
     (
@@ -71,11 +68,10 @@ pub fn schema<'a, S>(input: &mut TokenStream<'a>)
             position, directives, query, mutation, subscription,
         })
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn scalar_type<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<ScalarType<'a, T>, TokenStream<'a>>
+pub fn scalar_type<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<ScalarType<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -86,11 +82,10 @@ pub fn scalar_type<'a, T>(input: &mut TokenStream<'a>)
         .map(|(position, name, directives)| {
             ScalarType { position, description: None, name, directives }
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn scalar_type_extension<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<ScalarTypeExtension<'a, T>, TokenStream<'a>>
+pub fn scalar_type_extension<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<ScalarTypeExtension<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -108,11 +103,10 @@ pub fn scalar_type_extension<'a, T>(input: &mut TokenStream<'a>)
         }
         Ok(ScalarTypeExtension { position, name, directives })
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn implements_interfaces<'a, X>(input: &mut TokenStream<'a>)
-    -> ParseResult<Vec<X::Value>, TokenStream<'a>>
+pub fn implements_interfaces<'a, X>(input: &mut TokenStream<'a>) -> StdParseResult<Vec<X::Value>, TokenStream<'a>>
     where X: Text<'a>,
 {
     optional(
@@ -121,11 +115,10 @@ pub fn implements_interfaces<'a, X>(input: &mut TokenStream<'a>)
         .with(sep_by1(name::<'a, X>(), punct("&")))
     )
         .map(|opt| opt.unwrap_or_else(Vec::new))
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn input_value<'a, X>(input: &mut TokenStream<'a>)
-    -> ParseResult<InputValue<'a, X>, TokenStream<'a>>
+pub fn input_value<'a, X>(input: &mut TokenStream<'a>) -> StdParseResult<InputValue<'a, X>, TokenStream<'a>>
     where X: Text<'a>,
 {
     (
@@ -142,20 +135,18 @@ pub fn input_value<'a, X>(input: &mut TokenStream<'a>)
             position, description, name, value_type, default_value, directives,
         }
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn arguments_definition<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<Vec<InputValue<'a, T>>, TokenStream<'a>>
+pub fn arguments_definition<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<Vec<InputValue<'a, T>>, TokenStream<'a>>
     where T: Text<'a>,
 {
     optional(punct("(").with(many1(parser(input_value))).skip(punct(")")))
     .map(|v| v.unwrap_or_else(Vec::new))
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn field<'a, S>(input: &mut TokenStream<'a>)
-    -> ParseResult<Field<'a, S>, TokenStream<'a>>
+pub fn field<'a, S>(input: &mut TokenStream<'a>) -> StdParseResult<Field<'a, S>, TokenStream<'a>>
     where S: Text<'a>,
 {
     (
@@ -171,21 +162,19 @@ pub fn field<'a, S>(input: &mut TokenStream<'a>)
             position, description, name, arguments, field_type, directives
         }
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn fields<'a, S>(input: &mut TokenStream<'a>)
-    -> ParseResult<Vec<Field<'a, S>>, TokenStream<'a>>
+pub fn fields<'a, S>(input: &mut TokenStream<'a>) -> StdParseResult<Vec<Field<'a, S>>, TokenStream<'a>>
     where S: Text<'a>,
 {
     optional(punct("{").with(many1(parser(field))).skip(punct("}")))
     .map(|v| v.unwrap_or_else(Vec::new))
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
 
-pub fn object_type<'a, S>(input: &mut TokenStream<'a>)
-    -> ParseResult<ObjectType<'a, S>, TokenStream<'a>>
+pub fn object_type<'a, S>(input: &mut TokenStream<'a>) -> StdParseResult<ObjectType<'a, S>, TokenStream<'a>>
     where S: Text<'a>,
 {
     (
@@ -202,11 +191,10 @@ pub fn object_type<'a, S>(input: &mut TokenStream<'a>)
                 description: None,  // is filled in described_definition
             }
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn object_type_extension<'a, S>(input: &mut TokenStream<'a>)
-    -> ParseResult<ObjectTypeExtension<'a, S>, TokenStream<'a>>
+pub fn object_type_extension<'a, S>(input: &mut TokenStream<'a>) -> StdParseResult<ObjectTypeExtension<'a, S>, TokenStream<'a>>
     where S: Text<'a>,
 {
     (
@@ -231,11 +219,10 @@ pub fn object_type_extension<'a, S>(input: &mut TokenStream<'a>)
                 implements_interfaces: interfaces,
             })
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn interface_type<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<InterfaceType<'a, T>, TokenStream<'a>>
+pub fn interface_type<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<InterfaceType<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -253,11 +240,10 @@ pub fn interface_type<'a, T>(input: &mut TokenStream<'a>)
                 description: None,  // is filled in described_definition
             }
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn interface_type_extension<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<InterfaceTypeExtension<'a, T>, TokenStream<'a>>
+pub fn interface_type_extension<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<InterfaceTypeExtension<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -281,20 +267,18 @@ pub fn interface_type_extension<'a, T>(input: &mut TokenStream<'a>)
                 directives, fields,
             })
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn union_members<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<Vec<T::Value>, TokenStream<'a>>
+pub fn union_members<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<Vec<T::Value>, TokenStream<'a>>
     where T: Text<'a>,
 {
     optional(punct("|"))
     .with(sep_by1(name::<'a, T>(), punct("|")))
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn union_type<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<UnionType<'a, T>, TokenStream<'a>>
+pub fn union_type<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<UnionType<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -310,11 +294,10 @@ pub fn union_type<'a, T>(input: &mut TokenStream<'a>)
             description: None,  // is filled in described_definition
         }
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn union_type_extension<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<UnionTypeExtension<'a, T>, TokenStream<'a>>
+pub fn union_type_extension<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<UnionTypeExtension<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -336,11 +319,10 @@ pub fn union_type_extension<'a, T>(input: &mut TokenStream<'a>)
             types: types.unwrap_or_else(Vec::new),
         })
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn enum_values<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<Vec<EnumValue<'a, T>>, TokenStream<'a>>
+pub fn enum_values<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<Vec<EnumValue<'a, T>>, TokenStream<'a>>
     where T: Text<'a>,
 {
     punct("{")
@@ -356,11 +338,10 @@ pub fn enum_values<'a, T>(input: &mut TokenStream<'a>)
         })
     ))
     .skip(punct("}"))
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn enum_type<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<EnumType<'a, T>, TokenStream<'a>>
+pub fn enum_type<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<EnumType<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -376,11 +357,10 @@ pub fn enum_type<'a, T>(input: &mut TokenStream<'a>)
             description: None,  // is filled in described_definition
         }
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn enum_type_extension<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<EnumTypeExtension<'a, T>, TokenStream<'a>>
+pub fn enum_type_extension<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<EnumTypeExtension<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -402,20 +382,18 @@ pub fn enum_type_extension<'a, T>(input: &mut TokenStream<'a>)
             values: values.unwrap_or_else(Vec::new),
         })
     })
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn input_fields<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<Vec<InputValue<'a, T>>, TokenStream<'a>>
+pub fn input_fields<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<Vec<InputValue<'a, T>>, TokenStream<'a>>
     where T: Text<'a>,
 {
     optional(punct("{").with(many1(parser(input_value))).skip(punct("}")))
     .map(|v| v.unwrap_or_else(Vec::new))
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
-pub fn input_object_type<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<InputObjectType<'a, T>, TokenStream<'a>>
+pub fn input_object_type<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<InputObjectType<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -430,11 +408,10 @@ pub fn input_object_type<'a, T>(input: &mut TokenStream<'a>)
                 description: None,  // is filled in described_definition
             }
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn input_object_type_extension<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<InputObjectTypeExtension<'a, T>, TokenStream<'a>>
+pub fn input_object_type_extension<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<InputObjectTypeExtension<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -455,11 +432,10 @@ pub fn input_object_type_extension<'a, T>(input: &mut TokenStream<'a>)
                 position, name, directives, fields,
             })
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn directive_locations<'a>(input: &mut TokenStream<'a>)
-    -> ParseResult<Vec<DirectiveLocation>, TokenStream<'a>>
+pub fn directive_locations<'a>(input: &mut TokenStream<'a>) -> StdParseResult<Vec<DirectiveLocation>, TokenStream<'a>>
 {
     optional(
         optional(punct("|"))
@@ -469,11 +445,10 @@ pub fn directive_locations<'a>(input: &mut TokenStream<'a>)
             punct("|")))
     )
         .map(|opt| opt.unwrap_or_else(Vec::new))
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn directive_definition<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<DirectiveDefinition<'a, T>, TokenStream<'a>>
+pub fn directive_definition<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<DirectiveDefinition<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     (
@@ -490,11 +465,10 @@ pub fn directive_definition<'a, T>(input: &mut TokenStream<'a>)
                 description: None,  // is filled in described_definition
             }
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn described_definition<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<Definition<'a, T>, TokenStream<'a>>
+pub fn described_definition<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<Definition<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     use self::TypeDefinition::*;
@@ -532,11 +506,10 @@ pub fn described_definition<'a, T>(input: &mut TokenStream<'a>)
             }
             def
         })
-        .parse_stream(input)
+        .parse_stream(input).into()
 }
 
-pub fn type_extension<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<TypeExtension<'a, T>, TokenStream<'a>>
+pub fn type_extension<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<TypeExtension<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     ident("extend")
@@ -548,19 +521,18 @@ pub fn type_extension<'a, T>(input: &mut TokenStream<'a>)
         parser(enum_type_extension).map(TypeExtension::Enum),
         parser(input_object_type_extension).map(TypeExtension::InputObject),
     )))
-    .parse_stream(input)
+    .parse_stream(input).into()
 }
 
 
-pub fn definition<'a, T>(input: &mut TokenStream<'a>)
-    -> ParseResult<Definition<'a, T>, TokenStream<'a>>
+pub fn definition<'a, T>(input: &mut TokenStream<'a>) -> StdParseResult<Definition<'a, T>, TokenStream<'a>>
     where T: Text<'a>,
 {
     choice((
         parser(schema).map(Definition::SchemaDefinition),
         parser(type_extension).map(Definition::TypeExtension),
         parser(described_definition),
-    )).parse_stream(input)
+    )).parse_stream(input).into()
 }
 
 /// Parses a piece of schema language and returns an AST
@@ -568,13 +540,12 @@ pub fn parse_schema<'a, T>(s: &'a str) -> Result<Document<'a, T>, ParseError>
     where T: Text<'a>,
 {
     let mut tokens = TokenStream::new(s);
-    let (doc, _) = many1(parser(definition))
-        .map(|d| Document { definitions: d })
-        .skip(eof())
-        .parse_stream(&mut tokens)
-        .map_err(|e| e.into_inner().error)?;
-
-    Ok(doc)
+    match many1(parser(definition)).map(|d| Document { definitions: d }).skip(eof()).parse_stream(&mut tokens) {
+        combine::ParseResult::CommitOk(doc) => Ok(doc),
+        combine::ParseResult::PeekOk(doc) => Ok(doc),
+        combine::ParseResult::CommitErr(err) => Err(err.into()),
+        combine::ParseResult::PeekErr(err) => Err(err.error.into()),
+    }
 }
 
 

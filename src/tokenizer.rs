@@ -2,7 +2,7 @@ use std::fmt;
 
 use combine::{StreamOnce, Positioned};
 use combine::error::{StreamError};
-use combine::stream::{Resetable};
+use combine::stream::{ResetStream};
 use combine::easy::{Error, Errors};
 
 use crate::position::Pos;
@@ -46,12 +46,12 @@ pub struct Checkpoint {
 }
 
 impl<'a> StreamOnce for TokenStream<'a> {
-    type Item = Token<'a>;
+    type Token = Token<'a>;
     type Range = Token<'a>;
     type Position = Pos;
     type Error = Errors<Token<'a>, Token<'a>, Pos>;
 
-    fn uncons(&mut self) -> Result<Self::Item, Error<Token<'a>, Token<'a>>> {
+    fn uncons(&mut self) -> Result<Self::Token, combine::stream::StreamErrorFor<Self>> {
         if let Some((at, tok, off, pos)) = self.next_state {
             if at == self.off {
                 self.off = off;
@@ -75,7 +75,7 @@ impl<'a> Positioned for TokenStream<'a> {
     }
 }
 
-impl<'a> Resetable for TokenStream<'a> {
+impl<'a> ResetStream for TokenStream<'a> {
     type Checkpoint = Checkpoint;
     fn checkpoint(&self) -> Self::Checkpoint {
         Checkpoint {
@@ -83,9 +83,10 @@ impl<'a> Resetable for TokenStream<'a> {
             off: self.off,
         }
     }
-    fn reset(&mut self, checkpoint: Checkpoint) {
+    fn reset(&mut self, checkpoint: Checkpoint) -> Result<(), Self::Error> {
         self.position = checkpoint.position;
         self.off = checkpoint.off;
+        Ok(())
     }
 }
 
@@ -185,7 +186,7 @@ impl<'a> TokenStream<'a> {
                 // seem like this would be a good place to handle that,
                 // but instead this code allows this token to propagate up
                 // to the parser which is better equipped to make specific
-                // error messages about unmatched pairs. 
+                // error messages about unmatched pairs.
                 // The case where recursion limit would overflow but instead
                 // saturates is just a specific case of the more general
                 // occurrence above.
@@ -198,7 +199,7 @@ impl<'a> TokenStream<'a> {
                     self.advance_token(Punctuator, 3)
                 } else {
                     Err(
-                        Error::unexpected_message(
+                        Error::unexpected_format(
                         format_args!("bare dot {:?} is not supported, \
                             only \"...\"", cur_char)
                         )
@@ -242,7 +243,7 @@ impl<'a> TokenStream<'a> {
                     let value = &self.buf[self.off..][..len];
                     if !check_float(value, exponent, real) {
                         return Err(
-                            Error::unexpected_message(
+                            Error::unexpected_format(
                                 format_args!("unsupported float {:?}", value)
                             )
                         );
@@ -255,7 +256,7 @@ impl<'a> TokenStream<'a> {
                     let value = &self.buf[self.off..][..len];
                     if !check_int(value) {
                         return Err(
-                            Error::unexpected_message(
+                            Error::unexpected_format(
                                 format_args!("unsupported integer {:?}", value)
                             )
                         );
@@ -274,7 +275,7 @@ impl<'a> TokenStream<'a> {
                     }
 
                     Err(
-                        Error::unexpected_message(
+                        Error::unexpected_format(
                             "unterminated block string value"
                         )
                     )
@@ -292,7 +293,7 @@ impl<'a> TokenStream<'a> {
                             }
                             '\n' => {
                                 return Err(
-                                    Error::unexpected_message(
+                                    Error::unexpected_format(
                                         "unterminated string value"
                                     )
                                 );
@@ -307,14 +308,14 @@ impl<'a> TokenStream<'a> {
                         escaped = !escaped && cur_char == '\\';
                     }
                     Err(
-                        Error::unexpected_message(
+                        Error::unexpected_format(
                             "unterminated string value"
                         )
                     )
                 }
             }
             _ => Err(
-                    Error::unexpected_message(
+                    Error::unexpected_format(
                         format_args!("unexpected character {:?}", cur_char)
                     )
             ),
