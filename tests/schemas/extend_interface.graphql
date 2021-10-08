@@ -1,3 +1,7 @@
 extend interface Bar {
   two(argument: InputType!): Type
 }
+
+extend interface Foo implements IOne & ITwo {
+  three(argument: [InputType!]!): Type
+}

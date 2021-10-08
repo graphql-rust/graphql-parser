@@ -1,3 +1,7 @@
 extend type Foo {
   seven(argument: [String]): Type
 }
+
+extend type Bar implements IOne & ITwo {
+  five(argument: [String!]!): Type
+}
