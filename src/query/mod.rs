@@ -1,6 +1,6 @@
 //! Query language AST and parsing utilities
 //!
-mod ast;
+pub mod ast;
 mod error;
 mod format;
 mod grammar;
