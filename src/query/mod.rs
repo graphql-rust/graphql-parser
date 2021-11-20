@@ -4,7 +4,7 @@ pub mod ast;
 mod error;
 mod format;
 mod grammar;
-
+pub mod transformer;
 
 pub use self::grammar::{parse_query, consume_definition};
 pub use self::error::ParseError;
