@@ -58,6 +58,26 @@ pub enum Value<'a, T: Text<'a>> {
     Object(BTreeMap<T::Value, Value<'a, T>>),
 }
 
+impl<'a, T: Text<'a>> Value<'a, T> {
+    pub fn into_static(&self) -> Value<'static, String> {
+        match self {
+            Self::Variable(v) => Value::Variable(v.as_ref().into()),
+            Self::Int(i) => Value::Int(i.clone()),
+            Self::Float(f) => Value::Float(*f),
+            Self::String(s) => Value::String(s.clone()),
+            Self::Boolean(b) => Value::Boolean(*b),
+            Self::Null => Value::Null,
+            Self::Enum(v) => Value::Enum(v.as_ref().into()),
+            Self::List(l) => {
+                Value::List(l.iter().map(|e| e.into_static()).collect())
+            },
+            Self::Object(o) => {
+                Value::Object(o.iter().map(|(k, v)| (k.as_ref().into(), v.into_static())).collect())
+            },
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Type<'a, T: Text<'a>> {
     NamedType(T::Value),
