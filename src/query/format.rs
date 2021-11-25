@@ -188,13 +188,15 @@ impl<'a, T: Text<'a>> Displayable for Mutation<'a, T>
         if let Some(ref name) = self.name {
             f.write(" ");
             f.write(name.as_ref());
-            if !self.variable_definitions.is_empty() {
-                f.write("(");
-                for var in &self.variable_definitions {
-                    var.display(f);
-                }
-                f.write(")");
+        }
+        if !self.variable_definitions.is_empty() {
+            f.write("(");
+            self.variable_definitions[0].display(f);
+            for var in &self.variable_definitions[1..] {
+                f.write(", ");
+                var.display(f);
             }
+            f.write(")");
         }
         format_directives(&self.directives, f);
         f.write(" ");
