@@ -275,7 +275,7 @@ impl<'a> TokenStream<'a> {
                     }
 
                     Err(
-                        Error::unexpected_format(
+                        Error::unexpected_static_message(
                             "unterminated block string value"
                         )
                     )
@@ -293,7 +293,7 @@ impl<'a> TokenStream<'a> {
                             }
                             '\n' => {
                                 return Err(
-                                    Error::unexpected_format(
+                                    Error::unexpected_static_message(
                                         "unterminated string value"
                                     )
                                 );
@@ -308,7 +308,7 @@ impl<'a> TokenStream<'a> {
                         escaped = !escaped && cur_char == '\\';
                     }
                     Err(
-                        Error::unexpected_format(
+                        Error::unexpected_static_message(
                             "unterminated string value"
                         )
                     )
