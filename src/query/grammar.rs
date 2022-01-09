@@ -432,7 +432,7 @@ mod test {
         let err = format!("{}", result.unwrap_err());
         assert_eq!(
             &err,
-            "query parse error: Parse error at 1:114\nExpected `]`\nRecursion limit exceeded\n"
+            "Parse error at 1:114\nExpected `]`\nRecursion limit exceeded\n"
         )
     }
 }
