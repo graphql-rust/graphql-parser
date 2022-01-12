@@ -1,1 +1,3 @@
 directive @skip(if: Boolean!) on FIELD | FRAGMENT_SPREAD | INLINE_FRAGMENT
+
+directive @onVariableDefinition on VARIABLE_DEFINITION
