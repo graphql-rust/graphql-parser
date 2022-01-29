@@ -106,4 +106,5 @@ pub mod schema;
 pub use crate::query::parse_query;
 pub use crate::schema::parse_schema;
 pub use crate::position::Pos;
+pub use crate::common::*;
 pub use crate::format::Style;
