@@ -104,6 +104,10 @@ fn mutation_directive() {
     roundtrip_default("mutation_directive");
 }
 #[test]
+fn var_directive() {
+    roundtrip_default("var_directive");
+}
+#[test]
 fn mutation_nameless_vars() {
     roundtrip_default("mutation_nameless_vars");
 }
