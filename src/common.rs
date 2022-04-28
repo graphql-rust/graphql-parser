@@ -43,7 +43,12 @@ pub struct Directive<'a, T: Text<'a>> {
 #[derive(Debug, Clone, PartialEq)]
 // we use i64 as a reference implementation: graphql-js thinks even 32bit
 // integers is enough. We might consider lift this limit later though
+#[cfg(not(feature = "as_i32"))]
 pub struct Number(pub(crate) i64);
+#[derive(Debug, Clone, PartialEq)]
+#[cfg(feature = "as_i32")]
+pub struct Number(pub(crate) i32);
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value<'a, T: Text<'a>> {
@@ -85,7 +90,9 @@ pub enum Type<'a, T: Text<'a>> {
     NonNullType(Box<Type<'a, T>>),
 }
 
+
 impl Number {
+    #[cfg(not(feature = "as_i32"))]
     /// Returns a number as i64 if it fits the type
     pub fn as_i64(&self) -> Option<i64> {
         Some(self.0)
@@ -94,7 +101,9 @@ impl Number {
 
 impl From<i32> for Number {
     fn from(i: i32) -> Self {
-        Number(i as i64)
+        #[cfg(not(feature = "as_i32"))]
+        let i = i as i64;
+        Number(i)
     }
 }
 
@@ -328,6 +337,7 @@ mod tests {
     use super::Number;
     use super::unquote_string;
 
+    #[cfg(not(feature = "as_i32"))]
     #[test]
     fn number_from_i32_and_to_i64_conversion() {
         assert_eq!(Number::from(1).as_i64(), Some(1));
