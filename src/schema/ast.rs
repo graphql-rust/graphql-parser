@@ -401,6 +401,7 @@ pub enum DirectiveLocation {
     EnumValue,
     InputObject,
     InputFieldDefinition,
+    VariableDefinition,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -451,6 +452,7 @@ impl DirectiveLocation {
             EnumValue => "ENUM_VALUE",
             InputObject => "INPUT_OBJECT",
             InputFieldDefinition => "INPUT_FIELD_DEFINITION",
+            VariableDefinition => "VARIABLE_DEFINITION",
         }
     }
 
@@ -478,6 +480,7 @@ impl DirectiveLocation {
             | EnumValue
             | InputObject
             | InputFieldDefinition
+            | VariableDefinition
                 => false,
         }
     }
@@ -517,6 +520,7 @@ impl FromStr for DirectiveLocation {
             "ENUM_VALUE" => EnumValue,
             "INPUT_OBJECT" => InputObject,
             "INPUT_FIELD_DEFINITION" => InputFieldDefinition,
+            "VARIABLE_DEFINITION" => VariableDefinition,
             _ => return Err(InvalidDirectiveLocation),
         };
 

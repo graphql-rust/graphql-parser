@@ -50,4 +50,5 @@ fn roundtrip2(filename: &str) {
 #[test] fn directive() { roundtrip("directive"); }
 #[test] fn kitchen_sink() { roundtrip2("kitchen-sink"); }
 #[test] fn directive_descriptions() { roundtrip2("directive_descriptions"); }
+#[test] fn directive_variable_definition() { roundtrip("directive_variable_definition"); }
 #[test] fn repeatable() {roundtrip("repeatable")}
