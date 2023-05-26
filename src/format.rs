@@ -19,6 +19,7 @@ pub(crate) struct Formatter<'a> {
 pub struct Style {
     indent: u32,
     multiline_arguments: bool,
+    block_strings: bool,
 }
 
 impl Default for Style {
@@ -26,6 +27,7 @@ impl Default for Style {
         Style {
             indent: 2,
             multiline_arguments: false,
+            block_strings: true,
         }
     }
 }
@@ -40,6 +42,12 @@ impl Style {
     /// Set whether to add new lines between arguments
     pub fn multiline_arguments(&mut self, multiline_arguments: bool) -> &mut Self {
         self.multiline_arguments = multiline_arguments;
+        self
+    }
+
+    /// Set whether to use triple quoted block strings
+    pub fn block_strings(&mut self, block_strings: bool) -> &mut Self {
+        self.block_strings = block_strings;
         self
     }
 }
@@ -134,7 +142,7 @@ impl<'a> Formatter<'a> {
                 _ => has_nonprintable = true,
             }
         }
-        if !has_newline || has_nonprintable {
+        if !self.style.block_strings || (!has_newline || has_nonprintable) {
             use std::fmt::Write;
             self.buf.push('"');
             for c in s.chars() {
