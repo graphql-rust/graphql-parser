@@ -4,4 +4,4 @@ query MyQuery {
 ---
 query parse error: Parse error at 2:10
 Unexpected `[[Punctuator]`
-Expected `Name`
+Expected Name

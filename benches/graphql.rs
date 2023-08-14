@@ -3,15 +3,15 @@ extern crate test;
 
 extern crate graphql_parser;
 
-use std::io::Read;
 use std::fs::File;
+use std::io::Read;
 
 use graphql_parser::parse_query;
 
 fn load_file(name: &str) -> String {
     let mut buf = String::with_capacity(1024);
     let path = format!("tests/queries/{}.graphql", name);
-    let mut f = File::open(&path).unwrap();
+    let mut f = File::open(path).unwrap();
     f.read_to_string(&mut buf).unwrap();
     buf
 }

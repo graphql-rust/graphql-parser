@@ -19,7 +19,7 @@ fn roundtrip_default(filename: &str) {
 fn roundtrip(filename: &str, style: &Style) {
     let mut buf = String::with_capacity(1024);
     let path = format!("tests/queries/{}.graphql", filename);
-    let mut f = File::open(&path).unwrap();
+    let mut f = File::open(path).unwrap();
     f.read_to_string(&mut buf).unwrap();
     let ast = parse_query::<String>(&buf).unwrap().to_owned();
     assert_eq!(ast.format(style), buf);
@@ -29,12 +29,12 @@ fn roundtrip2(filename: &str) {
     let mut buf = String::with_capacity(1024);
     let source = format!("tests/queries/{}.graphql", filename);
     let target = format!("tests/queries/{}_canonical.graphql", filename);
-    let mut f = File::open(&source).unwrap();
+    let mut f = File::open(source).unwrap();
     f.read_to_string(&mut buf).unwrap();
     let ast = parse_query::<String>(&buf).unwrap().to_owned();
 
     let mut buf = String::with_capacity(1024);
-    let mut f = File::open(&target).unwrap();
+    let mut f = File::open(target).unwrap();
     f.read_to_string(&mut buf).unwrap();
     assert_eq!(ast.to_string(), buf);
 }
