@@ -1,12 +1,11 @@
 use std::fmt;
 
-use combine::{StreamOnce, Positioned};
-use combine::error::{StreamError};
-use combine::stream::{Resetable};
-use combine::easy::{Error, Errors};
+use combine::easy::{Error, Errors, Info};
+use combine::error::StreamError;
+use combine::stream::ResetStream;
+use combine::{Positioned, StreamOnce};
 
 use crate::position::Pos;
-
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum Kind {
@@ -46,12 +45,12 @@ pub struct Checkpoint {
 }
 
 impl<'a> StreamOnce for TokenStream<'a> {
-    type Item = Token<'a>;
+    type Token = Token<'a>;
     type Range = Token<'a>;
     type Position = Pos;
     type Error = Errors<Token<'a>, Token<'a>, Pos>;
 
-    fn uncons(&mut self) -> Result<Self::Item, Error<Token<'a>, Token<'a>>> {
+    fn uncons(&mut self) -> Result<Self::Token, Error<Token<'a>, Token<'a>>> {
         if let Some((at, tok, off, pos)) = self.next_state {
             if at == self.off {
                 self.off = off;
@@ -61,7 +60,7 @@ impl<'a> StreamOnce for TokenStream<'a> {
         }
         let old_pos = self.off;
         let (kind, len) = self.take_token()?;
-        let value = &self.buf[self.off-len..self.off];
+        let value = &self.buf[self.off - len..self.off];
         self.skip_whitespace();
         let token = Token { kind, value };
         self.next_state = Some((old_pos, token, self.off, self.position));
@@ -75,7 +74,7 @@ impl<'a> Positioned for TokenStream<'a> {
     }
 }
 
-impl<'a> Resetable for TokenStream<'a> {
+impl<'a> ResetStream for TokenStream<'a> {
     type Checkpoint = Checkpoint;
     fn checkpoint(&self) -> Self::Checkpoint {
         Checkpoint {
@@ -83,22 +82,26 @@ impl<'a> Resetable for TokenStream<'a> {
             off: self.off,
         }
     }
-    fn reset(&mut self, checkpoint: Checkpoint) {
+    fn reset(&mut self, checkpoint: Checkpoint) -> Result<(), Self::Error> {
         self.position = checkpoint.position;
         self.off = checkpoint.off;
+        Ok(())
     }
 }
 
 // NOTE: we expect that first character is always digit or minus, as returned
 // by tokenizer
 fn check_int(value: &str) -> bool {
-    value == "0" || value == "-0" ||
-       (!value.starts_with('0') && value != "-" && !value.starts_with("-0")
-       && value[1..].chars().all(|x| x >= '0' && x <= '9'))
+    value == "0"
+        || value == "-0"
+        || (!value.starts_with('0')
+            && value != "-"
+            && !value.starts_with("-0")
+            && value[1..].chars().all(|x| x.is_ascii_digit()))
 }
 
 fn check_dec(value: &str) -> bool {
-    !value.is_empty() && value.chars().all(|x| x >= '0' && x <= '9')
+    !value.is_empty() && value.chars().all(|x| x.is_ascii_digit())
 }
 
 fn check_exp(value: &str) -> bool {
@@ -110,22 +113,17 @@ fn check_exp(value: &str) -> bool {
         return false;
     }
 
-    value[1..].chars().all(|x| x >= '0' && x <= '9')
+    value[1..].chars().all(|x| x.is_ascii_digit())
 }
 
-fn check_float(value: &str, exponent: Option<usize>, real: Option<usize>)
-    -> bool
-{
+fn check_float(value: &str, exponent: Option<usize>, real: Option<usize>) -> bool {
     match (exponent, real) {
         (Some(e), Some(r)) if e < r => false,
-        (Some(e), Some(r))
-        => check_int(&value[..r]) &&
-           check_dec(&value[r+1..e]) &&
-           check_exp(&value[e+1..]),
-        (Some(e), None)
-        => check_int(&value[..e]) && check_exp(&value[e+1..]),
-        (None, Some(r))
-        => check_int(&value[..r]) && check_dec(&value[r+1..]),
+        (Some(e), Some(r)) => {
+            check_int(&value[..r]) && check_dec(&value[r + 1..e]) && check_exp(&value[e + 1..])
+        }
+        (Some(e), None) => check_int(&value[..e]) && check_exp(&value[e + 1..]),
+        (None, Some(r)) => check_int(&value[..r]) && check_dec(&value[r + 1..]),
         (None, None) => unreachable!(),
     }
 }
@@ -144,7 +142,7 @@ impl<'a> TokenStream<'a> {
             position: Pos { line: 1, column: 1 },
             off: 0,
             next_state: None,
-            recursion_limit
+            recursion_limit,
         };
         me.skip_whitespace();
         me
@@ -159,9 +157,7 @@ impl<'a> TokenStream<'a> {
         Ok((kind, size))
     }
 
-    fn take_token(&mut self)
-        -> Result<(Kind, usize), Error<Token<'a>, Token<'a>>>
-    {
+    fn take_token(&mut self) -> Result<(Kind, usize), Error<Token<'a>, Token<'a>>> {
         use self::Kind::*;
         let mut iter = self.buf[self.off..].char_indices();
         let cur_char = match iter.next() {
@@ -172,12 +168,13 @@ impl<'a> TokenStream<'a> {
         match cur_char {
             '(' | '[' | '{' => {
                 // Check for recursion limit
-                self.recursion_limit = self.recursion_limit
+                self.recursion_limit = self
+                    .recursion_limit
                     .checked_sub(1)
                     .ok_or_else(|| Error::message_static_message("Recursion limit exceeded"))?;
 
                 self.advance_token(Punctuator, 1)
-            },
+            }
             ')' | ']' | '}' => {
                 // Notes on exceptional cases:
                 // recursion_limit may exceed the original value specified
@@ -185,7 +182,7 @@ impl<'a> TokenStream<'a> {
                 // seem like this would be a good place to handle that,
                 // but instead this code allows this token to propagate up
                 // to the parser which is better equipped to make specific
-                // error messages about unmatched pairs. 
+                // error messages about unmatched pairs.
                 // The case where recursion limit would overflow but instead
                 // saturates is just a specific case of the more general
                 // occurrence above.
@@ -197,16 +194,18 @@ impl<'a> TokenStream<'a> {
                 if iter.as_str().starts_with("..") {
                     self.advance_token(Punctuator, 3)
                 } else {
-                    Err(
-                        Error::unexpected_message(
-                        format_args!("bare dot {:?} is not supported, \
-                            only \"...\"", cur_char)
+                    Err(Error::Unexpected(Info::Owned(
+                        format_args!(
+                            "bare dot {:?} is not supported, \
+                            only \"...\"",
+                            cur_char
                         )
-                    )
+                        .to_string(),
+                    )))
                 }
             }
             '_' | 'a'..='z' | 'A'..='Z' => {
-                while let Some((idx, cur_char)) = iter.next() {
+                for (idx, cur_char) in iter.by_ref() {
                     match cur_char {
                         '_' | 'a'..='z' | 'A'..='Z' | '0'..='9' => continue,
                         _ => return self.advance_token(Name, idx),
@@ -228,24 +227,20 @@ impl<'a> TokenStream<'a> {
                     };
                     match cur_char {
                         // just scan for now, will validate later on
-                        ' ' | '\n' | '\r' | '\t' | ',' | '#' |
-                        '!' | '$' | ':' | '=' | '@' | '|' | '&' |
-                        '(' | ')' | '[' | ']' | '{' | '}'
-                        => break idx,
+                        ' ' | '\n' | '\r' | '\t' | ',' | '#' | '!' | '$' | ':' | '=' | '@'
+                        | '|' | '&' | '(' | ')' | '[' | ']' | '{' | '}' => break idx,
                         '.' => real = Some(idx),
                         'e' | 'E' => exponent = Some(idx),
-                        _ => {},
+                        _ => {}
                     }
                 };
 
                 if exponent.is_some() || real.is_some() {
                     let value = &self.buf[self.off..][..len];
                     if !check_float(value, exponent, real) {
-                        return Err(
-                            Error::unexpected_message(
-                                format_args!("unsupported float {:?}", value)
-                            )
-                        );
+                        return Err(Error::Unexpected(Info::Owned(
+                            format_args!("unsupported float {:?}", value).to_string(),
+                        )));
                     }
                     self.position.column += len;
                     self.off += len;
@@ -254,11 +249,9 @@ impl<'a> TokenStream<'a> {
                 } else {
                     let value = &self.buf[self.off..][..len];
                     if !check_int(value) {
-                        return Err(
-                            Error::unexpected_message(
-                                format_args!("unsupported integer {:?}", value)
-                            )
-                        );
+                        return Err(Error::Unexpected(Info::Owned(
+                            format_args!("unsupported integer {:?}", value).to_string(),
+                        )));
                     }
                     self.advance_token(IntValue, len)
                 }
@@ -273,11 +266,9 @@ impl<'a> TokenStream<'a> {
                         }
                     }
 
-                    Err(
-                        Error::unexpected_message(
-                            "unterminated block string value"
-                        )
-                    )
+                    Err(Error::Unexpected(Info::Owned(
+                        "unterminated block string value".to_string(),
+                    )))
                 } else {
                     let mut nchars = 1;
                     let mut escaped = false;
@@ -287,37 +278,29 @@ impl<'a> TokenStream<'a> {
                             '"' if escaped => {}
                             '"' => {
                                 self.position.column += nchars;
-                                self.off += idx+1;
-                                return Ok((StringValue, idx+1));
+                                self.off += idx + 1;
+                                return Ok((StringValue, idx + 1));
                             }
                             '\n' => {
-                                return Err(
-                                    Error::unexpected_message(
-                                        "unterminated string value"
-                                    )
-                                );
+                                return Err(Error::Unexpected(Info::Owned(
+                                    "unterminated string value".to_string(),
+                                )));
                             }
 
-                            _ => {
-
-                            }
+                            _ => {}
                         }
 
                         // if we aren't escaped and the current char is a \, we are now escaped
                         escaped = !escaped && cur_char == '\\';
                     }
-                    Err(
-                        Error::unexpected_message(
-                            "unterminated string value"
-                        )
-                    )
+                    Err(Error::Unexpected(Info::Owned(
+                        "unterminated string value".to_string(),
+                    )))
                 }
             }
-            _ => Err(
-                    Error::unexpected_message(
-                        format_args!("unexpected character {:?}", cur_char)
-                    )
-            ),
+            _ => Err(Error::Unexpected(Info::Owned(
+                format_args!("unexpected character {:?}", cur_char).to_string(),
+            ))),
         }
     }
 
@@ -342,7 +325,7 @@ impl<'a> TokenStream<'a> {
                 }
                 //comment
                 '#' => {
-                    while let Some((_, cur_char)) = iter.next() {
+                    for (_, cur_char) in iter.by_ref() {
                         // TODO(tailhook) ensure SourceCharacter
                         if cur_char == '\r' || cur_char == '\n' {
                             self.position.column = 1;
@@ -364,7 +347,7 @@ impl<'a> TokenStream<'a> {
         let lines = val.as_bytes().iter().filter(|&&x| x == b'\n').count();
         self.position.line += lines;
         if lines > 0 {
-            let line_offset = val.rfind('\n').unwrap()+1;
+            let line_offset = val.rfind('\n').unwrap() + 1;
             let num = val[line_offset..].chars().count();
             self.position.column = num + 1;
         } else {
@@ -382,11 +365,11 @@ impl<'a> fmt::Display for Token<'a> {
 
 #[cfg(test)]
 mod test {
-    use super::{Kind, TokenStream};
     use super::Kind::*;
+    use super::{Kind, TokenStream};
     use combine::easy::Error;
 
-    use combine::{StreamOnce, Positioned};
+    use combine::{Positioned, StreamOnce};
 
     fn tok_str(s: &str) -> Vec<&str> {
         let mut r = Vec::new();
@@ -398,7 +381,7 @@ mod test {
                 Err(e) => panic!("Parse error at {}: {}", s.position(), e),
             }
         }
-        return r;
+        r
     }
     fn tok_typ(s: &str) -> Vec<Kind> {
         let mut r = Vec::new();
@@ -410,7 +393,7 @@ mod test {
                 Err(e) => panic!("Parse error at {}: {}", s.position(), e),
             }
         }
-        return r;
+        r
     }
 
     #[test]
@@ -428,9 +411,14 @@ mod test {
 
     #[test]
     fn query() {
-        assert_eq!(tok_str("query Query {
+        assert_eq!(
+            tok_str(
+                "query Query {
             object { field }
-        }"), ["query", "Query", "{", "object", "{", "field", "}", "}"]);
+        }"
+            ),
+            ["query", "Query", "{", "object", "{", "field", "}", "}"]
+        );
     }
 
     #[test]
@@ -452,20 +440,50 @@ mod test {
         assert_eq!(tok_typ("-132"), [IntValue]);
         assert_eq!(tok_str("132"), ["132"]);
         assert_eq!(tok_typ("132"), [IntValue]);
-        assert_eq!(tok_str("a(x: 10) { b }"),
-            ["a", "(", "x", ":", "10", ")", "{", "b", "}"]);
-        assert_eq!(tok_typ("a(x: 10) { b }"),
-            [Name, Punctuator, Name, Punctuator, IntValue, Punctuator,
-                Punctuator, Name, Punctuator]);
+        assert_eq!(
+            tok_str("a(x: 10) { b }"),
+            ["a", "(", "x", ":", "10", ")", "{", "b", "}"]
+        );
+        assert_eq!(
+            tok_typ("a(x: 10) { b }"),
+            [
+                Name, Punctuator, Name, Punctuator, IntValue, Punctuator, Punctuator, Name,
+                Punctuator
+            ]
+        );
     }
 
     // TODO(tailhook) fix errors in parser and check error message
-    #[test] #[should_panic] fn zero_int() { tok_str("01"); }
-    #[test] #[should_panic] fn zero_int4() { tok_str("00001"); }
-    #[test] #[should_panic] fn minus_int() { tok_str("-"); }
-    #[test] #[should_panic] fn minus_zero_int() { tok_str("-01"); }
-    #[test] #[should_panic] fn minus_zero_int4() { tok_str("-00001"); }
-    #[test] #[should_panic] fn letters_int() { tok_str("0bbc"); }
+    #[test]
+    #[should_panic]
+    fn zero_int() {
+        tok_str("01");
+    }
+    #[test]
+    #[should_panic]
+    fn zero_int4() {
+        tok_str("00001");
+    }
+    #[test]
+    #[should_panic]
+    fn minus_int() {
+        tok_str("-");
+    }
+    #[test]
+    #[should_panic]
+    fn minus_zero_int() {
+        tok_str("-01");
+    }
+    #[test]
+    #[should_panic]
+    fn minus_zero_int4() {
+        tok_str("-00001");
+    }
+    #[test]
+    #[should_panic]
+    fn letters_int() {
+        tok_str("0bbc");
+    }
 
     #[test]
     fn float() {
@@ -493,29 +511,87 @@ mod test {
         assert_eq!(tok_typ("-132e+0"), [FloatValue]);
         assert_eq!(tok_str("132e+0"), ["132e+0"]);
         assert_eq!(tok_typ("132e+0"), [FloatValue]);
-        assert_eq!(tok_str("a(x: 10.0) { b }"),
-            ["a", "(", "x", ":", "10.0", ")", "{", "b", "}"]);
-        assert_eq!(tok_typ("a(x: 10.0) { b }"),
-            [Name, Punctuator, Name, Punctuator, FloatValue, Punctuator,
-                Punctuator, Name, Punctuator]);
+        assert_eq!(
+            tok_str("a(x: 10.0) { b }"),
+            ["a", "(", "x", ":", "10.0", ")", "{", "b", "}"]
+        );
+        assert_eq!(
+            tok_typ("a(x: 10.0) { b }"),
+            [
+                Name, Punctuator, Name, Punctuator, FloatValue, Punctuator, Punctuator, Name,
+                Punctuator
+            ]
+        );
         assert_eq!(tok_str("1.23e4"), ["1.23e4"]);
         assert_eq!(tok_typ("1.23e4"), [FloatValue]);
     }
 
     // TODO(tailhook) fix errors in parser and check error message
-    #[test] #[should_panic] fn no_int_float() { tok_str(".0"); }
-    #[test] #[should_panic] fn no_int_float1() { tok_str(".1"); }
-    #[test] #[should_panic] fn zero_float() { tok_str("01.0"); }
-    #[test] #[should_panic] fn zero_float4() { tok_str("00001.0"); }
-    #[test] #[should_panic] fn minus_float() { tok_str("-.0"); }
-    #[test] #[should_panic] fn minus_zero_float() { tok_str("-01.0"); }
-    #[test] #[should_panic] fn minus_zero_float4() { tok_str("-00001.0"); }
-    #[test] #[should_panic] fn letters_float() { tok_str("0bbc.0"); }
-    #[test] #[should_panic] fn letters_float2() { tok_str("0.bbc"); }
-    #[test] #[should_panic] fn letters_float3() { tok_str("0.bbce0"); }
-    #[test] #[should_panic] fn no_exp_sign_float() { tok_str("0e0"); }
-    #[test] #[should_panic] fn unterminated_string() { tok_str(r#""hello\""#); }
-    #[test] #[should_panic] fn extra_unterminated_string() { tok_str(r#""hello\\\""#); }
+    #[test]
+    #[should_panic]
+    fn no_int_float() {
+        tok_str(".0");
+    }
+    #[test]
+    #[should_panic]
+    fn no_int_float1() {
+        tok_str(".1");
+    }
+    #[test]
+    #[should_panic]
+    fn zero_float() {
+        tok_str("01.0");
+    }
+    #[test]
+    #[should_panic]
+    fn zero_float4() {
+        tok_str("00001.0");
+    }
+    #[test]
+    #[should_panic]
+    fn minus_float() {
+        tok_str("-.0");
+    }
+    #[test]
+    #[should_panic]
+    fn minus_zero_float() {
+        tok_str("-01.0");
+    }
+    #[test]
+    #[should_panic]
+    fn minus_zero_float4() {
+        tok_str("-00001.0");
+    }
+    #[test]
+    #[should_panic]
+    fn letters_float() {
+        tok_str("0bbc.0");
+    }
+    #[test]
+    #[should_panic]
+    fn letters_float2() {
+        tok_str("0.bbc");
+    }
+    #[test]
+    #[should_panic]
+    fn letters_float3() {
+        tok_str("0.bbce0");
+    }
+    #[test]
+    #[should_panic]
+    fn no_exp_sign_float() {
+        tok_str("0e0");
+    }
+    #[test]
+    #[should_panic]
+    fn unterminated_string() {
+        tok_str(r#""hello\""#);
+    }
+    #[test]
+    #[should_panic]
+    fn extra_unterminated_string() {
+        tok_str(r#""hello\\\""#);
+    }
 
     #[test]
     fn string() {
