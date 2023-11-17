@@ -173,41 +173,57 @@ where
 
 fn unquote_block_string(src: &str) -> Result<String, Error<Token<'_>, Token<'_>>> {
     debug_assert!(src.starts_with("\"\"\"") && src.ends_with("\"\"\""));
-    let indent = src[3..src.len() - 3]
-        .lines()
-        .skip(1)
-        .filter_map(|line| {
-            let trimmed = line.trim_start().len();
-            if trimmed > 0 {
-                Some(line.len() - trimmed)
-            } else {
-                None // skip whitespace-only lines
-            }
-        })
-        .min()
-        .unwrap_or(0);
-    let mut result = String::with_capacity(src.len() - 6);
-    let mut lines = src[3..src.len() - 3].lines();
-    if let Some(first) = lines.next() {
-        let stripped = first.trim();
-        if !stripped.is_empty() {
-            result.push_str(stripped);
-            result.push('\n');
+    let lines = src[3..src.len() - 3].lines();
+
+    let mut common_indent = usize::MAX;
+    let mut first_non_empty_line: Option<usize> = None;
+    let mut last_non_empty_line = 0;
+    for (idx, line) in lines.clone().enumerate() {
+        let indent = line.len() - line.trim_start().len();
+        if indent == line.len() {
+            continue;
         }
-    }
-    let mut last_line = 0;
-    for line in lines {
-        last_line = result.len();
-        if line.len() > indent {
-            result.push_str(&line[indent..].replace(r#"\""""#, r#"""""#));
+
+        first_non_empty_line.get_or_insert(idx);
+        last_non_empty_line = idx;
+
+        if idx != 0 {
+            common_indent = std::cmp::min(common_indent, indent);
         }
-        result.push('\n');
-    }
-    if result[last_line..].trim().is_empty() {
-        result.truncate(last_line);
     }
 
-    Ok(result)
+    if first_non_empty_line.is_none() {
+        // The block string contains only whitespace.
+        return Ok("".to_string());
+    }
+    let first_non_empty_line = first_non_empty_line.unwrap();
+
+    let mut result = String::with_capacity(src.len() - 6);
+    let mut lines = lines
+        .enumerate()
+        // Skip leading and trailing empty lines.
+        .skip(first_non_empty_line)
+        .take(last_non_empty_line - first_non_empty_line + 1)
+        // Remove indent, except the first line.
+        .map(|(idx, line)| {
+            if idx != 0 && line.len() >= common_indent {
+                &line[common_indent..]
+            } else {
+                line
+            }
+        })
+        // Handle escaped triple-quote (\""").
+        .map(|x| x.replace(r#"\""""#, r#"""""#));
+
+    if let Some(line) = lines.next() {
+        result.push_str(&line);
+
+        for line in lines {
+            result.push_str("\n");
+            result.push_str(&line);
+        }
+    }
+    return Ok(result);
 }
 
 fn unquote_string(s: &str) -> Result<String, Error<Token, Token>> {
@@ -390,6 +406,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use super::unquote_block_string;
     use super::unquote_string;
     use super::Number;
 
@@ -421,5 +438,44 @@ mod tests {
             unquote_string(r#""\u0009 hello \u000A there""#).expect(""),
             "\u{0009} hello \u{000A} there"
         );
+    }
+
+    #[test]
+    fn block_string_leading_and_trailing_empty_lines() {
+        let block = &triple_quote("   \n\n  Hello,\n    World!\n\n  Yours,\n    GraphQL.\n\n\n");
+        assert_eq!(
+            unquote_block_string(&block),
+            Result::Ok("Hello,\n  World!\n\nYours,\n  GraphQL.".to_string())
+        );
+    }
+
+    #[test]
+    fn block_string_indent() {
+        let block = &triple_quote("Hello   \n\n  Hello,\n    World!\n");
+        assert_eq!(
+            unquote_block_string(&block),
+            Result::Ok("Hello   \n\nHello,\n  World!".to_string())
+        );
+    }
+
+    #[test]
+    fn block_string_escaping() {
+        let block = triple_quote(r#"\""""#);
+        assert_eq!(
+            unquote_block_string(&block),
+            Result::Ok("\"\"\"".to_string())
+        );
+    }
+
+    #[test]
+    fn block_string_empty() {
+        let block = triple_quote("");
+        assert_eq!(unquote_block_string(&block), Result::Ok("".to_string()));
+        let block = triple_quote("   \n\t\n");
+        assert_eq!(unquote_block_string(&block), Result::Ok("".to_string()));
+    }
+
+    fn triple_quote(input: &str) -> String {
+        return format!("\"\"\"{}\"\"\"", input);
     }
 }
