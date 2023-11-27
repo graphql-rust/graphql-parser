@@ -5,15 +5,13 @@
 //!
 //! [graphql grammar]: http://facebook.github.io/graphql/October2016/#sec-Appendix-Grammar-Summary
 //!
-#[cfg(feature = "serde")]
 use serde::Serialize;
 
 pub use crate::common::{Directive, Number, Text, Type, Value};
 use crate::position::Pos;
 
 /// Root of query data
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Document<'a, T: Text<'a>> {
     pub definitions: Vec<Definition<'a, T>>,
 }
@@ -37,15 +35,13 @@ impl<'a> Document<'a, String> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Definition<'a, T: Text<'a>> {
     Operation(OperationDefinition<'a, T>),
     Fragment(FragmentDefinition<'a, T>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FragmentDefinition<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -54,8 +50,7 @@ pub struct FragmentDefinition<'a, T: Text<'a>> {
     pub selection_set: SelectionSet<'a, T>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum OperationDefinition<'a, T: Text<'a>> {
     SelectionSet(SelectionSet<'a, T>),
     Query(Query<'a, T>),
@@ -63,8 +58,7 @@ pub enum OperationDefinition<'a, T: Text<'a>> {
     Subscription(Subscription<'a, T>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Query<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: Option<T::Value>,
@@ -73,8 +67,7 @@ pub struct Query<'a, T: Text<'a>> {
     pub selection_set: SelectionSet<'a, T>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Mutation<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: Option<T::Value>,
@@ -83,8 +76,7 @@ pub struct Mutation<'a, T: Text<'a>> {
     pub selection_set: SelectionSet<'a, T>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Subscription<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: Option<T::Value>,
@@ -93,15 +85,13 @@ pub struct Subscription<'a, T: Text<'a>> {
     pub selection_set: SelectionSet<'a, T>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct SelectionSet<'a, T: Text<'a>> {
     pub span: (Pos, Pos),
     pub items: Vec<Selection<'a, T>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct VariableDefinition<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -109,16 +99,14 @@ pub struct VariableDefinition<'a, T: Text<'a>> {
     pub default_value: Option<Value<'a, T>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Selection<'a, T: Text<'a>> {
     Field(Field<'a, T>),
     FragmentSpread(FragmentSpread<'a, T>),
     InlineFragment(InlineFragment<'a, T>),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct Field<'a, T: Text<'a>> {
     pub position: Pos,
     pub alias: Option<T::Value>,
@@ -128,22 +116,19 @@ pub struct Field<'a, T: Text<'a>> {
     pub selection_set: SelectionSet<'a, T>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct FragmentSpread<'a, T: Text<'a>> {
     pub position: Pos,
     pub fragment_name: T::Value,
     pub directives: Vec<Directive<'a, T>>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum TypeCondition<'a, T: Text<'a>> {
     On(T::Value),
 }
 
-#[derive(Debug, Clone, PartialEq)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[derive(Debug, Clone, PartialEq, Serialize)]
 pub struct InlineFragment<'a, T: Text<'a>> {
     pub position: Pos,
     pub type_condition: Option<TypeCondition<'a, T>>,

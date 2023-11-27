@@ -1,10 +1,11 @@
 use combine::easy::Errors;
 use thiserror::Error;
 
-use crate::position::Pos;
 use crate::tokenizer::Token;
+use crate::position::Pos;
 
 pub type InternalError<'a> = Errors<Token<'a>, Token<'a>, Pos>;
+
 
 /// Error parsing schema
 ///
