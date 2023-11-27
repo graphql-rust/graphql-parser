@@ -1,7 +1,8 @@
+use serde::Serialize;
 use std::fmt;
 
 /// Original position of element in source code
-#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Default, Hash)]
+#[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Default, Hash, Serialize)]
 pub struct Pos {
     /// One-based line number
     pub line: usize,
