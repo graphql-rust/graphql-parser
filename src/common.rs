@@ -52,6 +52,7 @@ impl<'a> Text<'a> for std::borrow::Cow<'a, str> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Directive<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -65,11 +66,13 @@ pub struct Directive<'a, T: Text<'a>> {
 /// in `serde_json`: encapsulate value in new-type, allowing type
 /// to be extended later.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 // we use i64 as a reference implementation: graphql-js thinks even 32bit
 // integers is enough. We might consider lift this limit later though
 pub struct Number(pub(crate) i64);
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum Value<'a, T: Text<'a>> {
     Variable(T::Value),
     Int(Number),
@@ -103,6 +106,7 @@ impl<'a, T: Text<'a>> Value<'a, T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum Type<'a, T: Text<'a>> {
     NamedType(T::Value),
     ListType(Box<Type<'a, T>>),

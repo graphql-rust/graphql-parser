@@ -1,12 +1,13 @@
 use std::str::FromStr;
-
+#[cfg(feature = "serde")]
 use serde::Serialize;
 use thiserror::Error;
 
 pub use crate::common::{Directive, Text, Type, Value};
 use crate::position::Pos;
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Document<'a, T: Text<'a>>
 where
     T: Text<'a>,
@@ -33,7 +34,8 @@ impl<'a> Document<'a, String> {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum Definition<'a, T: Text<'a>> {
     SchemaDefinition(SchemaDefinition<'a, T>),
     TypeDefinition(TypeDefinition<'a, T>),
@@ -41,7 +43,8 @@ pub enum Definition<'a, T: Text<'a>> {
     DirectiveDefinition(DirectiveDefinition<'a, T>),
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize)]
+#[derive(Debug, Clone, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct SchemaDefinition<'a, T: Text<'a>> {
     pub position: Pos,
     pub directives: Vec<Directive<'a, T>>,
@@ -50,7 +53,8 @@ pub struct SchemaDefinition<'a, T: Text<'a>> {
     pub subscription: Option<T::Value>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum TypeDefinition<'a, T: Text<'a>> {
     Scalar(ScalarType<'a, T>),
     Object(ObjectType<'a, T>),
@@ -60,7 +64,8 @@ pub enum TypeDefinition<'a, T: Text<'a>> {
     InputObject(InputObjectType<'a, T>),
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum TypeExtension<'a, T: Text<'a>> {
     Scalar(ScalarTypeExtension<'a, T>),
     Object(ObjectTypeExtension<'a, T>),
@@ -70,7 +75,8 @@ pub enum TypeExtension<'a, T: Text<'a>> {
     InputObject(InputObjectTypeExtension<'a, T>),
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ScalarType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -92,7 +98,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ScalarTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -112,7 +119,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ObjectType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -138,7 +146,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct ObjectTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -162,7 +171,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct Field<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -172,7 +182,8 @@ pub struct Field<'a, T: Text<'a>> {
     pub directives: Vec<Directive<'a, T>>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct InputValue<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -182,7 +193,8 @@ pub struct InputValue<'a, T: Text<'a>> {
     pub directives: Vec<Directive<'a, T>>,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct InterfaceType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -208,7 +220,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct InterfaceTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -232,7 +245,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct UnionType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -256,7 +270,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct UnionTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -278,7 +293,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct EnumType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -302,7 +318,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct EnumValue<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -324,7 +341,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct EnumTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -346,7 +364,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct InputObjectType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
@@ -370,7 +389,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct InputObjectTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -392,7 +412,8 @@ where
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub enum DirectiveLocation {
     // executable
     Query,
@@ -418,7 +439,8 @@ pub enum DirectiveLocation {
     VariableDefinition,
 }
 
-#[derive(Debug, Clone, PartialEq, Serialize)]
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize))]
 pub struct DirectiveDefinition<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
