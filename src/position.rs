@@ -1,10 +1,10 @@
-#[cfg(feature = "serde")]
+#[cfg(feature = "ast_serde")]
 use serde::Serialize;
 use std::fmt;
 
 /// Original position of element in source code
 #[derive(PartialOrd, Ord, PartialEq, Eq, Clone, Copy, Default, Hash)]
-#[cfg_attr(feature = "serde", derive(Serialize))]
+#[cfg_attr(feature = "ast_serde", derive(Serialize))]
 pub struct Pos {
     /// One-based line number
     pub line: usize,
