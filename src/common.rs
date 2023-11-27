@@ -3,6 +3,8 @@ use std::{collections::BTreeMap, fmt};
 use combine::easy::{Error, Info};
 use combine::{choice, many, many1, optional, position, StdParseResult};
 use combine::{parser, Parser};
+#[cfg(feature = "serde")]
+use serde::Serialize;
 
 use crate::helpers::{ident, kind, name, punct};
 use crate::position::Pos;
@@ -11,6 +13,20 @@ use crate::tokenizer::{Kind as T, Token, TokenStream};
 /// Text abstracts over types that hold a string value.
 /// It is used to make the AST generic over the string type.
 pub trait Text<'a>: 'a {
+    #[cfg(feature = "serde")]
+    type Value: 'a
+        + From<&'a str>
+        + AsRef<str>
+        + std::borrow::Borrow<str>
+        + PartialEq
+        + Eq
+        + PartialOrd
+        + Ord
+        + fmt::Debug
+        + Clone
+        + Serialize;
+
+    #[cfg(not(feature = "serde"))]
     type Value: 'a
         + From<&'a str>
         + AsRef<str>
