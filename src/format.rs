@@ -3,7 +3,6 @@ use std::default::Default;
 
 use crate::common::Directive;
 
-
 #[derive(Debug, PartialEq)]
 pub(crate) struct Formatter<'a> {
     buf: String,
@@ -171,13 +170,16 @@ impl<'a> Formatter<'a> {
     }
 
     fn dec_indent(&mut self) {
-        self.indent = self.indent.checked_sub(self.style.indent)
+        self.indent = self
+            .indent
+            .checked_sub(self.style.indent)
             .expect("negative indent");
     }
 }
 
-pub(crate) fn format_directives<'a, T>(dirs: &[Directive<'a, T>], f: &mut Formatter) 
-    where T: crate::common::Text<'a>,
+pub(crate) fn format_directives<'a, T>(dirs: &[Directive<'a, T>], f: &mut Formatter)
+where
+    T: crate::common::Text<'a>,
 {
     for dir in dirs {
         f.write(" ");
@@ -198,7 +200,7 @@ macro_rules! impl_display {
 
     ('a $($typ: ident, )+) => {
         $(
-            impl<'a, T> fmt::Display for $typ<'a, T> 
+            impl<'a, T> fmt::Display for $typ<'a, T>
                 where T: Text<'a>,
             {
                 fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
