@@ -1,6 +1,6 @@
-use std::str::FromStr;
 #[cfg(feature = "serde")]
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 use thiserror::Error;
 
 pub use crate::common::{Directive, Text, Type, Value};
