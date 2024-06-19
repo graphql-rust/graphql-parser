@@ -15,7 +15,7 @@ use crate::tokenizer::{Kind as T, Token, TokenStream};
 /// It is used to make the AST generic over the string type.
 pub trait Text<'a>
 where
-    Self: 'a + Serialize + Deserialize<'a>,
+    Self: 'a,
 {
     type Value: 'a
         + From<&'a str>
