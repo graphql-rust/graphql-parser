@@ -42,11 +42,8 @@ impl<'a> Document<'a, String> {
 pub enum Definition<'a, T: Text<'a>> {
     #[cfg_attr(feature = "serde", serde(borrow))]
     SchemaDefinition(SchemaDefinition<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     TypeDefinition(TypeDefinition<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     TypeExtension(TypeExtension<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     DirectiveDefinition(DirectiveDefinition<'a, T>),
 }
 
@@ -68,15 +65,10 @@ pub struct SchemaDefinition<'a, T: Text<'a>> {
 pub enum TypeDefinition<'a, T: Text<'a>> {
     #[cfg_attr(feature = "serde", serde(borrow))]
     Scalar(ScalarType<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Object(ObjectType<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Interface(InterfaceType<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Union(UnionType<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Enum(EnumType<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     InputObject(InputObjectType<'a, T>),
 }
 
@@ -86,15 +78,10 @@ pub enum TypeDefinition<'a, T: Text<'a>> {
 pub enum TypeExtension<'a, T: Text<'a>> {
     #[cfg_attr(feature = "serde", serde(borrow))]
     Scalar(ScalarTypeExtension<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Object(ObjectTypeExtension<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Interface(InterfaceTypeExtension<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Union(UnionTypeExtension<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     Enum(EnumTypeExtension<'a, T>),
-    #[cfg_attr(feature = "serde", serde(borrow))]
     InputObject(InputObjectTypeExtension<'a, T>),
 }
 
@@ -153,7 +140,6 @@ pub struct ObjectType<'a, T: Text<'a>> {
     pub implements_interfaces: Vec<T::Value>,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub fields: Vec<Field<'a, T>>,
 }
 
@@ -181,7 +167,6 @@ pub struct ObjectTypeExtension<'a, T: Text<'a>> {
     pub implements_interfaces: Vec<T::Value>,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub fields: Vec<Field<'a, T>>,
 }
 
@@ -208,9 +193,7 @@ pub struct Field<'a, T: Text<'a>> {
     pub name: T::Value,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub arguments: Vec<InputValue<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub field_type: Type<'a, T>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
 }
 
@@ -222,9 +205,7 @@ pub struct InputValue<'a, T: Text<'a>> {
     pub name: T::Value,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub value_type: Type<'a, T>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub default_value: Option<Value<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
 }
 
@@ -237,7 +218,6 @@ pub struct InterfaceType<'a, T: Text<'a>> {
     pub implements_interfaces: Vec<T::Value>,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub fields: Vec<Field<'a, T>>,
 }
 
@@ -265,7 +245,6 @@ pub struct InterfaceTypeExtension<'a, T: Text<'a>> {
     pub implements_interfaces: Vec<T::Value>,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub fields: Vec<Field<'a, T>>,
 }
 
@@ -342,7 +321,6 @@ pub struct EnumType<'a, T: Text<'a>> {
     pub name: T::Value,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub values: Vec<EnumValue<'a, T>>,
 }
 
@@ -392,7 +370,6 @@ pub struct EnumTypeExtension<'a, T: Text<'a>> {
     pub name: T::Value,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub values: Vec<EnumValue<'a, T>>,
 }
 
@@ -418,7 +395,6 @@ pub struct InputObjectType<'a, T: Text<'a>> {
     pub name: T::Value,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub fields: Vec<InputValue<'a, T>>,
 }
 
@@ -444,7 +420,6 @@ pub struct InputObjectTypeExtension<'a, T: Text<'a>> {
     pub name: T::Value,
     #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
-    #[cfg_attr(feature = "serde", serde(borrow))]
     pub fields: Vec<InputValue<'a, T>>,
 }
 
