@@ -19,3 +19,6 @@ jobs:
 
       - name: Test Rust
         run: cargo test
+
+      - name: Test Rust with serde feature
+        run: cargo test --all-features
