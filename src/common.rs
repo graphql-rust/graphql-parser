@@ -3,11 +3,35 @@ use std::{collections::BTreeMap, fmt};
 use combine::easy::{Error, Info};
 use combine::{choice, many, many1, optional, position, StdParseResult};
 use combine::{parser, Parser};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 use crate::helpers::{ident, kind, name, punct};
 use crate::position::Pos;
 use crate::tokenizer::{Kind as T, Token, TokenStream};
 
+#[cfg(feature = "serde")]
+/// Text abstracts over types that hold a string value.
+/// It is used to make the AST generic over the string type.
+pub trait Text<'a>
+where
+    Self: 'a,
+{
+    type Value: 'a
+        + From<&'a str>
+        + AsRef<str>
+        + std::borrow::Borrow<str>
+        + PartialEq
+        + Eq
+        + PartialOrd
+        + Ord
+        + fmt::Debug
+        + Clone
+        + Serialize
+        + Deserialize<'a>;
+}
+
+#[cfg(not(feature = "serde"))]
 /// Text abstracts over types that hold a string value.
 /// It is used to make the AST generic over the string type.
 pub trait Text<'a>: 'a {
@@ -36,6 +60,7 @@ impl<'a> Text<'a> for std::borrow::Cow<'a, str> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Directive<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
@@ -49,11 +74,13 @@ pub struct Directive<'a, T: Text<'a>> {
 /// in `serde_json`: encapsulate value in new-type, allowing type
 /// to be extended later.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 // we use i64 as a reference implementation: graphql-js thinks even 32bit
 // integers is enough. We might consider lift this limit later though
 pub struct Number(pub(crate) i64);
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Value<'a, T: Text<'a>> {
     Variable(T::Value),
     Int(Number),
@@ -87,6 +114,7 @@ impl<'a, T: Text<'a>> Value<'a, T> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Type<'a, T: Text<'a>> {
     NamedType(T::Value),
     ListType(Box<Type<'a, T>>),

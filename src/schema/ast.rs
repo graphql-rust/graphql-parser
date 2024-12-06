@@ -1,14 +1,19 @@
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::str::FromStr;
-
 use thiserror::Error;
 
-pub use crate::common::{Directive, Type, Value, Text};
+pub use crate::common::{Directive, Text, Type, Value};
 use crate::position::Pos;
 
 #[derive(Debug, Clone, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(bound(deserialize="'a: 'de, T: Deserialize<'de>")))]
 pub struct Document<'a, T: Text<'a>>
-    where T: Text<'a>
+where
+    T: Text<'a>,
 {
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub definitions: Vec<Definition<'a, T>>,
 }
 
@@ -31,9 +36,11 @@ impl<'a> Document<'a, String> {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(bound(deserialize="'a: 'de, T: Deserialize<'de>")))]
 pub enum Definition<'a, T: Text<'a>> {
+    #[cfg_attr(feature = "serde", serde(borrow))]
     SchemaDefinition(SchemaDefinition<'a, T>),
     TypeDefinition(TypeDefinition<'a, T>),
     TypeExtension(TypeExtension<'a, T>),
@@ -41,8 +48,11 @@ pub enum Definition<'a, T: Text<'a>> {
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(bound(deserialize="'a: 'de, T: Deserialize<'de>")))]
 pub struct SchemaDefinition<'a, T: Text<'a>> {
     pub position: Pos,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub query: Option<T::Value>,
     pub mutation: Option<T::Value>,
@@ -50,7 +60,10 @@ pub struct SchemaDefinition<'a, T: Text<'a>> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(bound(deserialize="'a: 'de, T: Deserialize<'de>")))]
 pub enum TypeDefinition<'a, T: Text<'a>> {
+    #[cfg_attr(feature = "serde", serde(borrow))]
     Scalar(ScalarType<'a, T>),
     Object(ObjectType<'a, T>),
     Interface(InterfaceType<'a, T>),
@@ -60,7 +73,10 @@ pub enum TypeDefinition<'a, T: Text<'a>> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(bound(deserialize="'a: 'de, T: Deserialize<'de>")))]
 pub enum TypeExtension<'a, T: Text<'a>> {
+    #[cfg_attr(feature = "serde", serde(borrow))]
     Scalar(ScalarTypeExtension<'a, T>),
     Object(ObjectTypeExtension<'a, T>),
     Interface(InterfaceTypeExtension<'a, T>),
@@ -70,15 +86,18 @@ pub enum TypeExtension<'a, T: Text<'a>> {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ScalarType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
 }
 
 impl<'a, T> ScalarType<'a, T>
-    where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -91,14 +110,17 @@ impl<'a, T> ScalarType<'a, T>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ScalarTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
 }
 
 impl<'a, T> ScalarTypeExtension<'a, T>
-    where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -110,17 +132,20 @@ impl<'a, T> ScalarTypeExtension<'a, T>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ObjectType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
     pub implements_interfaces: Vec<T::Value>,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<Field<'a, T>>,
 }
 
 impl<'a, T> ObjectType<'a, T>
-    where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -135,16 +160,19 @@ impl<'a, T> ObjectType<'a, T>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct ObjectTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
     pub implements_interfaces: Vec<T::Value>,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<Field<'a, T>>,
 }
 
 impl<'a, T> ObjectTypeExtension<'a, T>
-    where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -158,37 +186,44 @@ impl<'a, T> ObjectTypeExtension<'a, T>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Field<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub arguments: Vec<InputValue<'a, T>>,
     pub field_type: Type<'a, T>,
     pub directives: Vec<Directive<'a, T>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct InputValue<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub value_type: Type<'a, T>,
     pub default_value: Option<Value<'a, T>>,
     pub directives: Vec<Directive<'a, T>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct InterfaceType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
     pub implements_interfaces: Vec<T::Value>,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<Field<'a, T>>,
 }
 
 impl<'a, T> InterfaceType<'a, T>
-    where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -203,16 +238,19 @@ impl<'a, T> InterfaceType<'a, T>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct InterfaceTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
     pub implements_interfaces: Vec<T::Value>,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<Field<'a, T>>,
 }
 
 impl<'a, T> InterfaceTypeExtension<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -226,16 +264,19 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct UnionType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub types: Vec<T::Value>,
 }
 
 impl<'a, T> UnionType<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -249,15 +290,18 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct UnionTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub types: Vec<T::Value>,
 }
 
 impl<'a, T> UnionTypeExtension<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -270,16 +314,19 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct EnumType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub values: Vec<EnumValue<'a, T>>,
 }
 
 impl<'a, T> EnumType<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -293,15 +340,18 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct EnumValue<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
 }
 
 impl<'a, T> EnumValue<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -314,15 +364,18 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct EnumTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub values: Vec<EnumValue<'a, T>>,
 }
 
 impl<'a, T> EnumTypeExtension<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -335,16 +388,19 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct InputObjectType<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<InputValue<'a, T>>,
 }
 
 impl<'a, T> InputObjectType<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -358,15 +414,18 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct InputObjectTypeExtension<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub directives: Vec<Directive<'a, T>>,
     pub fields: Vec<InputValue<'a, T>>,
 }
 
 impl<'a, T> InputObjectTypeExtension<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -379,6 +438,7 @@ where T: Text<'a>
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum DirectiveLocation {
     // executable
     Query,
@@ -405,17 +465,20 @@ pub enum DirectiveLocation {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct DirectiveDefinition<'a, T: Text<'a>> {
     pub position: Pos,
     pub description: Option<String>,
     pub name: T::Value,
+    #[cfg_attr(feature = "serde", serde(borrow))]
     pub arguments: Vec<InputValue<'a, T>>,
     pub repeatable: bool,
     pub locations: Vec<DirectiveLocation>,
 }
 
 impl<'a, T> DirectiveDefinition<'a, T>
-where T: Text<'a>
+where
+    T: Text<'a>,
 {
     pub fn new(name: T::Value) -> Self {
         Self {
@@ -460,28 +523,11 @@ impl DirectiveLocation {
     pub fn is_query(&self) -> bool {
         use self::DirectiveLocation::*;
         match *self {
-            Query
-            | Mutation
-            | Subscription
-            | Field
-            | FragmentDefinition
-            | FragmentSpread
-            | InlineFragment
-                => true,
+            Query | Mutation | Subscription | Field | FragmentDefinition | FragmentSpread
+            | InlineFragment => true,
 
-            Schema
-            | Scalar
-            | Object
-            | FieldDefinition
-            | ArgumentDefinition
-            | Interface
-            | Union
-            | Enum
-            | EnumValue
-            | InputObject
-            | InputFieldDefinition
-            | VariableDefinition
-                => false,
+            Schema | Scalar | Object | FieldDefinition | ArgumentDefinition | Interface | Union
+            | Enum | EnumValue | InputObject | InputFieldDefinition | VariableDefinition => false,
         }
     }
 
@@ -495,11 +541,9 @@ impl DirectiveLocation {
 #[error("invalid directive location")]
 pub struct InvalidDirectiveLocation;
 
-
 impl FromStr for DirectiveLocation {
     type Err = InvalidDirectiveLocation;
-    fn from_str(s: &str) -> Result<DirectiveLocation, InvalidDirectiveLocation>
-    {
+    fn from_str(s: &str) -> Result<DirectiveLocation, InvalidDirectiveLocation> {
         use self::DirectiveLocation::*;
         let val = match s {
             "QUERY" => Query,

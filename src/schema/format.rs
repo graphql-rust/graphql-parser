@@ -1,9 +1,7 @@
-use std::fmt;
-
 use crate::common::Text;
 use crate::format::{format_directives, Displayable, Formatter, Style};
-
 use crate::schema::ast::*;
+use std::fmt;
 
 impl<'a, T> Document<'a, T>
 where
