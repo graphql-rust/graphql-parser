@@ -7,7 +7,6 @@ use crate::position::Pos;
 
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Document<'a, T: Text<'a>>
-    where T: Text<'a>
 {
     pub definitions: Vec<Definition<'a, T>>,
 }

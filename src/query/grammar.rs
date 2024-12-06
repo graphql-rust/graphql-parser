@@ -101,8 +101,6 @@ where
 pub fn query<'a, T: Text<'a>>(
     input: &mut TokenStream<'a>,
 ) -> StdParseResult<Query<'a, T>, TokenStream<'a>>
-where
-    T: Text<'a>,
 {
     position()
         .skip(ident("query"))
@@ -132,8 +130,6 @@ type OperationCommon<'a, T: Text<'a>> = (
 pub fn operation_common<'a, T: Text<'a>>(
     input: &mut TokenStream<'a>,
 ) -> StdParseResult<OperationCommon<'a, T>, TokenStream<'a>>
-where
-    T: Text<'a>,
 {
     optional(name::<'a, T>())
         .and(
@@ -169,8 +165,6 @@ where
 pub fn mutation<'a, T: Text<'a>>(
     input: &mut TokenStream<'a>,
 ) -> StdParseResult<Mutation<'a, T>, TokenStream<'a>>
-where
-    T: Text<'a>,
 {
     position()
         .skip(ident("mutation"))
@@ -191,8 +185,6 @@ where
 pub fn subscription<'a, T: Text<'a>>(
     input: &mut TokenStream<'a>,
 ) -> StdParseResult<Subscription<'a, T>, TokenStream<'a>>
-where
-    T: Text<'a>,
 {
     position()
         .skip(ident("subscription"))
@@ -228,8 +220,6 @@ where
 pub fn fragment_definition<'a, T: Text<'a>>(
     input: &mut TokenStream<'a>,
 ) -> StdParseResult<FragmentDefinition<'a, T>, TokenStream<'a>>
-where
-    T: Text<'a>,
 {
     (
         position().skip(ident("fragment")),
