@@ -4,8 +4,7 @@ use crate::format::{format_directives, Displayable, Formatter, Style};
 
 use crate::query::ast::*;
 
-impl<'a, T: Text<'a>> Document<'a, T>
-{
+impl<'a, T: Text<'a>> Document<'a, T> {
     /// Format a document according to style
     pub fn format(&self, style: &Style) -> String {
         let mut formatter = Formatter::new(style);
@@ -21,8 +20,7 @@ fn to_string<T: Displayable>(v: &T) -> String {
     formatter.into_string()
 }
 
-impl<'a, T: Text<'a>> Displayable for Document<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Document<'a, T> {
     fn display(&self, f: &mut Formatter) {
         for item in &self.definitions {
             item.display(f);
@@ -30,8 +28,7 @@ impl<'a, T: Text<'a>> Displayable for Document<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Definition<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Definition<'a, T> {
     fn display(&self, f: &mut Formatter) {
         match *self {
             Definition::Operation(ref op) => op.display(f),
@@ -40,8 +37,7 @@ impl<'a, T: Text<'a>> Displayable for Definition<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for OperationDefinition<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for OperationDefinition<'a, T> {
     fn display(&self, f: &mut Formatter) {
         match *self {
             OperationDefinition::SelectionSet(ref set) => set.display(f),
@@ -52,8 +48,7 @@ impl<'a, T: Text<'a>> Displayable for OperationDefinition<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for FragmentDefinition<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for FragmentDefinition<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.margin();
         f.indent();
@@ -71,8 +66,7 @@ impl<'a, T: Text<'a>> Displayable for FragmentDefinition<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for SelectionSet<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for SelectionSet<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.margin();
         f.indent();
@@ -84,8 +78,7 @@ impl<'a, T: Text<'a>> Displayable for SelectionSet<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Selection<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Selection<'a, T> {
     fn display(&self, f: &mut Formatter) {
         match *self {
             Selection::Field(ref fld) => fld.display(f),
@@ -95,8 +88,7 @@ impl<'a, T: Text<'a>> Displayable for Selection<'a, T>
     }
 }
 
-fn format_arguments<'a, T: Text<'a>>(arguments: &[(T::Value, Value<'a, T>)], f: &mut Formatter)
-{
+fn format_arguments<'a, T: Text<'a>>(arguments: &[(T::Value, Value<'a, T>)], f: &mut Formatter) {
     if !arguments.is_empty() {
         f.start_argument_block('(');
         f.start_argument();
@@ -114,8 +106,7 @@ fn format_arguments<'a, T: Text<'a>>(arguments: &[(T::Value, Value<'a, T>)], f: 
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Field<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Field<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.indent();
         if let Some(ref alias) = self.alias {
@@ -138,8 +129,7 @@ impl<'a, T: Text<'a>> Displayable for Field<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Query<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Query<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.margin();
         f.indent();
@@ -167,8 +157,7 @@ impl<'a, T: Text<'a>> Displayable for Query<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Mutation<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Mutation<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.margin();
         f.indent();
@@ -196,8 +185,7 @@ impl<'a, T: Text<'a>> Displayable for Mutation<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Subscription<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Subscription<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.margin();
         f.indent();
@@ -223,8 +211,7 @@ impl<'a, T: Text<'a>> Displayable for Subscription<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for VariableDefinition<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for VariableDefinition<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.write("$");
         f.write(self.name.as_ref());
@@ -237,8 +224,7 @@ impl<'a, T: Text<'a>> Displayable for VariableDefinition<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Type<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Type<'a, T> {
     fn display(&self, f: &mut Formatter) {
         match *self {
             Type::NamedType(ref name) => f.write(name.as_ref()),
@@ -255,8 +241,7 @@ impl<'a, T: Text<'a>> Displayable for Type<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Value<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Value<'a, T> {
     fn display(&self, f: &mut Formatter) {
         match *self {
             Value::Variable(ref name) => {
@@ -303,8 +288,7 @@ impl<'a, T: Text<'a>> Displayable for Value<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for InlineFragment<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for InlineFragment<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.indent();
         f.write("...");
@@ -322,8 +306,7 @@ impl<'a, T: Text<'a>> Displayable for InlineFragment<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for TypeCondition<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for TypeCondition<'a, T> {
     fn display(&self, f: &mut Formatter) {
         match *self {
             TypeCondition::On(ref name) => {
@@ -334,8 +317,7 @@ impl<'a, T: Text<'a>> Displayable for TypeCondition<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for FragmentSpread<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for FragmentSpread<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.indent();
         f.write("...");
@@ -345,8 +327,7 @@ impl<'a, T: Text<'a>> Displayable for FragmentSpread<'a, T>
     }
 }
 
-impl<'a, T: Text<'a>> Displayable for Directive<'a, T>
-{
+impl<'a, T: Text<'a>> Displayable for Directive<'a, T> {
     fn display(&self, f: &mut Formatter) {
         f.write("@");
         f.write(self.name.as_ref());
