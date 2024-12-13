@@ -19,3 +19,25 @@ jobs:
 
       - name: Test Rust
         run: cargo test
+
+  rustfmt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v1
+
+      - run: cargo fmt --all --check
+
+  toml_validation:
+    runs-on: ubuntu-latest
+    container:
+      image: tamasfe/taplo:0.8.1
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
+      - name: taplo lint
+        run: taplo lint
+      - name: taplo fmt
+        run: taplo fmt --check --diff
