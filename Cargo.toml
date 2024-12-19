@@ -13,6 +13,7 @@ documentation = "https://docs.rs/graphql-parser"
 version = "0.4.1"
 authors = ["Paul Colomiets <paul@colomiets.name>"]
 edition = "2018"
+rust-version = "1.61"
 
 [dependencies]
 combine = "4.6.6"
