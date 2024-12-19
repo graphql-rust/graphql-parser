@@ -223,7 +223,7 @@ fn unquote_block_string(src: &str) -> Result<String, Error<Token<'_>, Token<'_>>
             result.push_str(&line);
         }
     }
-    return Ok(result);
+    Ok(result)
 }
 
 fn unquote_string(s: &str) -> Result<String, Error<Token, Token>> {
@@ -476,6 +476,6 @@ mod tests {
     }
 
     fn triple_quote(input: &str) -> String {
-        return format!("\"\"\"{}\"\"\"", input);
+        format!("\"\"\"{}\"\"\"", input)
     }
 }
