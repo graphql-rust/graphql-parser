@@ -444,7 +444,7 @@ mod tests {
     fn block_string_leading_and_trailing_empty_lines() {
         let block = &triple_quote("   \n\n  Hello,\n    World!\n\n  Yours,\n    GraphQL.\n\n\n");
         assert_eq!(
-            unquote_block_string(&block),
+            unquote_block_string(block),
             Result::Ok("Hello,\n  World!\n\nYours,\n  GraphQL.".to_string())
         );
     }
@@ -453,7 +453,7 @@ mod tests {
     fn block_string_indent() {
         let block = &triple_quote("Hello   \n\n  Hello,\n    World!\n");
         assert_eq!(
-            unquote_block_string(&block),
+            unquote_block_string(block),
             Result::Ok("Hello   \n\nHello,\n  World!".to_string())
         );
     }
