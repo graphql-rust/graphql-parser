@@ -219,7 +219,7 @@ fn unquote_block_string(src: &str) -> Result<String, Error<Token<'_>, Token<'_>>
         result.push_str(&line);
 
         for line in lines {
-            result.push_str("\n");
+            result.push('\n');
             result.push_str(&line);
         }
     }
