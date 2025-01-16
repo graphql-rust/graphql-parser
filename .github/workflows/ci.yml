@@ -41,3 +41,12 @@ jobs:
         run: taplo lint
       - name: taplo fmt
         run: taplo fmt --check --diff
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@cargo-hack
+      - uses: Swatinem/rust-cache@v2
+      - name: check with all-features
+        run: cargo hack --rust-version --no-private --no-dev-deps check --all-features
