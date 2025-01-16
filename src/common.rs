@@ -414,14 +414,8 @@ mod tests {
     fn number_from_i32_and_to_i64_conversion() {
         assert_eq!(Number::from(1).as_i64(), Some(1));
         assert_eq!(Number::from(584).as_i64(), Some(584));
-        assert_eq!(
-            Number::from(i32::min_value()).as_i64(),
-            Some(i32::min_value() as i64)
-        );
-        assert_eq!(
-            Number::from(i32::max_value()).as_i64(),
-            Some(i32::max_value() as i64)
-        );
+        assert_eq!(Number::from(i32::MIN).as_i64(), Some(i32::MIN as i64));
+        assert_eq!(Number::from(i32::MAX).as_i64(), Some(i32::MAX as i64));
     }
 
     #[test]
