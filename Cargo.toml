@@ -19,5 +19,8 @@ rust-version = "1.61"
 combine = "4.6.6"
 thiserror = "2"
 
+[features]
+as_i32 = []
+
 [dev-dependencies]
 pretty_assertions = "0.5.0"
