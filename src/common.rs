@@ -27,7 +27,7 @@ impl<'a> Text<'a> for &'a str {
     type Value = Self;
 }
 
-impl<'a> Text<'a> for String {
+impl Text<'_> for String {
     type Value = String;
 }
 

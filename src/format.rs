@@ -47,7 +47,7 @@ pub(crate) trait Displayable {
     fn display(&self, f: &mut Formatter);
 }
 
-impl<'a> Formatter<'a> {
+impl Formatter<'_> {
     pub fn new(style: &Style) -> Formatter {
         Formatter {
             buf: String::with_capacity(1024),

@@ -10,7 +10,7 @@ pub struct Document<'a, T: Text<'a>> {
     pub definitions: Vec<Definition<'a, T>>,
 }
 
-impl<'a> Document<'a, String> {
+impl Document<'_, String> {
     pub fn into_static(self) -> Document<'static, String> {
         // To support both reference and owned values in the AST,
         // all string data is represented with the ::common::Str<'a, T: Text<'a>>

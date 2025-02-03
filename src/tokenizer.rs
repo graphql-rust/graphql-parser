@@ -68,13 +68,13 @@ impl<'a> StreamOnce for TokenStream<'a> {
     }
 }
 
-impl<'a> Positioned for TokenStream<'a> {
+impl Positioned for TokenStream<'_> {
     fn position(&self) -> Self::Position {
         self.position
     }
 }
 
-impl<'a> ResetStream for TokenStream<'a> {
+impl ResetStream for TokenStream<'_> {
     type Checkpoint = Checkpoint;
     fn checkpoint(&self) -> Self::Checkpoint {
         Checkpoint {
@@ -357,7 +357,7 @@ impl<'a> TokenStream<'a> {
     }
 }
 
-impl<'a> fmt::Display for Token<'a> {
+impl fmt::Display for Token<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}[{:?}]", self.value, self.kind)
     }
