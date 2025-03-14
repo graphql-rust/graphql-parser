@@ -35,6 +35,8 @@ pub fn minify_query(source: String) -> Result<String, MinifyError> {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
+
     #[test]
     fn strip_ignored_characters() {
         let source = "

@@ -368,8 +368,8 @@ mod test {
     use super::Kind::*;
     use super::{Kind, TokenStream};
     use combine::easy::Error;
-
     use combine::{Positioned, StreamOnce};
+    use pretty_assertions::assert_eq;
 
     fn tok_str(s: &str) -> Vec<&str> {
         let mut r = Vec::new();
