@@ -91,10 +91,6 @@
 //!
 #![warn(missing_debug_implementations)]
 
-#[cfg(test)]
-#[macro_use]
-extern crate pretty_assertions;
-
 mod common;
 #[macro_use]
 mod format;

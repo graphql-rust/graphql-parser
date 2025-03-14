@@ -410,6 +410,8 @@ mod tests {
     use super::unquote_string;
     use super::Number;
 
+    use pretty_assertions::assert_eq;
+
     #[test]
     fn number_from_i32_and_to_i64_conversion() {
         assert_eq!(Number::from(1).as_i64(), Some(1));

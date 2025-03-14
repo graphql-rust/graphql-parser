@@ -1,12 +1,11 @@
 extern crate graphql_parser;
-#[cfg(test)]
-#[macro_use]
-extern crate pretty_assertions;
 
 use std::fs::File;
 use std::io::Read;
 
 use graphql_parser::{parse_query, Style};
+
+use pretty_assertions::assert_eq;
 
 fn roundtrip_multiline_args(filename: &str) {
     roundtrip(filename, Style::default().multiline_arguments(true))

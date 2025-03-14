@@ -708,6 +708,8 @@ mod test {
     use crate::position::Pos;
     use crate::schema::grammar::*;
 
+    use pretty_assertions::assert_eq;
+
     fn ast(s: &str) -> Document<String> {
         parse_schema::<String>(s).unwrap().to_owned()
     }

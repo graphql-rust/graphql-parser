@@ -282,6 +282,7 @@ mod test {
     use super::{consume_definition, parse_query};
     use crate::position::Pos;
     use crate::query::grammar::*;
+    use pretty_assertions::assert_eq;
 
     fn ast(s: &str) -> Document<String> {
         parse_query::<String>(s).unwrap().to_owned()
