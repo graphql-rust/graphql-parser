@@ -67,12 +67,20 @@ where
                     },
                 )
                 .map(Selection::InlineFragment)
-                .or((position(), name::<'a, S>(), parser(directives))
-                    .map(|(position, fragment_name, directives)| FragmentSpread {
-                        position,
-                        fragment_name,
-                        directives,
-                    })
+                .or((
+                    position(),
+                    name::<'a, S>(),
+                    parser(arguments),
+                    parser(directives),
+                )
+                    .map(
+                        |(position, fragment_name, arguments, directives)| FragmentSpread {
+                            position,
+                            fragment_name,
+                            arguments,
+                            directives,
+                        },
+                    )
                     .map(Selection::FragmentSpread)),
         ))
         .parse_stream(input)
@@ -219,17 +227,41 @@ pub fn fragment_definition<'a, T: Text<'a>>(
     (
         position().skip(ident("fragment")),
         name::<'a, T>(),
+        optional(
+            punct("(")
+                .with(many1(
+                    (
+                        position(),
+                        punct("$").with(name::<'a, T>()).skip(punct(":")),
+                        parser(parse_type),
+                        optional(punct("=").with(parser(default_value))),
+                    )
+                        .map(|(position, name, var_type, default_value)| {
+                            VariableDefinition {
+                                position,
+                                name,
+                                var_type,
+                                default_value,
+                            }
+                        }),
+                ))
+                .skip(punct(")")),
+        )
+        .map(|vars| vars.unwrap_or_default()),
         ident("on").with(name::<'a, T>()).map(TypeCondition::On),
         parser(directives),
         parser(selection_set),
     )
         .map(
-            |(position, name, type_condition, directives, selection_set)| FragmentDefinition {
-                position,
-                name,
-                type_condition,
-                directives,
-                selection_set,
+            |(position, name, variable_definitions, type_condition, directives, selection_set)| {
+                FragmentDefinition {
+                    position,
+                    name,
+                    variable_definitions,
+                    type_condition,
+                    directives,
+                    selection_set,
+                }
             },
         )
         .parse_stream(input)

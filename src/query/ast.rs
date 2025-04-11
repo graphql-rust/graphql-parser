@@ -43,6 +43,7 @@ pub enum Definition<'a, T: Text<'a>> {
 pub struct FragmentDefinition<'a, T: Text<'a>> {
     pub position: Pos,
     pub name: T::Value,
+    pub variable_definitions: Vec<VariableDefinition<'a, T>>,
     pub type_condition: TypeCondition<'a, T>,
     pub directives: Vec<Directive<'a, T>>,
     pub selection_set: SelectionSet<'a, T>,
@@ -118,6 +119,7 @@ pub struct Field<'a, T: Text<'a>> {
 pub struct FragmentSpread<'a, T: Text<'a>> {
     pub position: Pos,
     pub fragment_name: T::Value,
+    pub arguments: Vec<(T::Value, Value<'a, T>)>,
     pub directives: Vec<Directive<'a, T>>,
 }
 

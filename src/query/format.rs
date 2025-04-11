@@ -54,6 +54,15 @@ impl<'a, T: Text<'a>> Displayable for FragmentDefinition<'a, T> {
         f.indent();
         f.write("fragment ");
         f.write(self.name.as_ref());
+        if !self.variable_definitions.is_empty() {
+            f.write("(");
+            self.variable_definitions[0].display(f);
+            for var in &self.variable_definitions[1..] {
+                f.write(", ");
+                var.display(f);
+            }
+            f.write(")");
+        }
         f.write(" ");
         self.type_condition.display(f);
         format_directives(&self.directives, f);
@@ -322,6 +331,7 @@ impl<'a, T: Text<'a>> Displayable for FragmentSpread<'a, T> {
         f.indent();
         f.write("...");
         f.write(self.fragment_name.as_ref());
+        format_arguments(&self.arguments, f);
         format_directives(&self.directives, f);
         f.endline();
     }
