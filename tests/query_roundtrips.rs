@@ -152,12 +152,20 @@ fn fragment_spread() {
     roundtrip_default("fragment_spread");
 }
 #[test]
+fn fragment_spread_arguments() {
+    roundtrip_default("fragment_spread_arguments");
+}
+#[test]
 fn minimal_mutation() {
     roundtrip_default("minimal_mutation");
 }
 #[test]
 fn fragment() {
     roundtrip_default("fragment");
+}
+#[test]
+fn fragment_variables() {
+    roundtrip_default("fragment_variables");
 }
 #[test]
 fn directive_args() {

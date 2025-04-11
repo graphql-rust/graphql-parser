@@ -1,0 +1,7 @@
+query {
+  node {
+    id
+    ...something(arg: "test")
+    ...somethingElse(arg2: $var)
+  }
+}
