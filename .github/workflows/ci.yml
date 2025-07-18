@@ -20,6 +20,9 @@ jobs:
       - name: Test Rust
         run: cargo test
 
+      - name: Test Rust (as_i32)
+        run: cargo test --features as_i32
+
   rustfmt:
     runs-on: ubuntu-latest
     steps:

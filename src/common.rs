@@ -45,13 +45,18 @@ pub struct Directive<'a, T: Text<'a>> {
 /// This represents integer number
 ///
 /// But since there is no definition on limit of number in spec
-/// (only in implemetation), we do a trick similar to the one
+/// (only in implementation), we do a trick similar to the one
 /// in `serde_json`: encapsulate value in new-type, allowing type
 /// to be extended later.
 #[derive(Debug, Clone, PartialEq)]
-// we use i64 as a reference implementation: graphql-js thinks even 32bit
-// integers is enough. We might consider lift this limit later though
+// we use i64 as a reference implementation by default.
+#[cfg(not(feature = "as_i32"))]
 pub struct Number(pub(crate) i64);
+
+#[derive(Debug, Clone, PartialEq)]
+// Use i32 when the as_i32 feature is enabled
+#[cfg(feature = "as_i32")]
+pub struct Number(pub(crate) i32);
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value<'a, T: Text<'a>> {
@@ -96,13 +101,43 @@ pub enum Type<'a, T: Text<'a>> {
 impl Number {
     /// Returns a number as i64 if it fits the type
     pub fn as_i64(&self) -> Option<i64> {
-        Some(self.0)
+        #[cfg(not(feature = "as_i32"))]
+        {
+            Some(self.0)
+        }
+        #[cfg(feature = "as_i32")]
+        {
+            Some(self.0 as i64)
+        }
+    }
+
+    /// Returns a number as i32 if it fits the type
+    pub fn as_i32(&self) -> Option<i32> {
+        #[cfg(not(feature = "as_i32"))]
+        {
+            if self.0 >= i32::MIN as i64 && self.0 <= i32::MAX as i64 {
+                Some(self.0 as i32)
+            } else {
+                None
+            }
+        }
+        #[cfg(feature = "as_i32")]
+        {
+            Some(self.0)
+        }
     }
 }
 
 impl From<i32> for Number {
     fn from(i: i32) -> Self {
-        Number(i as i64)
+        #[cfg(not(feature = "as_i32"))]
+        {
+            Number(i as i64)
+        }
+        #[cfg(feature = "as_i32")]
+        {
+            Number(i)
+        }
     }
 }
 
@@ -416,6 +451,32 @@ mod tests {
         assert_eq!(Number::from(584).as_i64(), Some(584));
         assert_eq!(Number::from(i32::MIN).as_i64(), Some(i32::MIN as i64));
         assert_eq!(Number::from(i32::MAX).as_i64(), Some(i32::MAX as i64));
+    }
+
+    #[test]
+    fn number_as_i32_conversion() {
+        // Test values that fit in i32
+        assert_eq!(Number::from(1).as_i32(), Some(1));
+        assert_eq!(Number::from(584).as_i32(), Some(584));
+        assert_eq!(Number::from(i32::MIN).as_i32(), Some(i32::MIN));
+        assert_eq!(Number::from(i32::MAX).as_i32(), Some(i32::MAX));
+
+        #[cfg(not(feature = "as_i32"))]
+        {
+            // Test values that don't fit in i32 (only when using i64 internally)
+            let too_large = Number(i32::MAX as i64 + 1);
+            assert_eq!(too_large.as_i32(), None);
+
+            let too_small = Number(i32::MIN as i64 - 1);
+            assert_eq!(too_small.as_i32(), None);
+        }
+
+        #[cfg(feature = "as_i32")]
+        {
+            // When using i32 internally, all values will fit in i32
+            assert_eq!(Number(0).as_i32(), Some(0));
+            assert_eq!(Number(-1).as_i32(), Some(-1));
+        }
     }
 
     #[test]

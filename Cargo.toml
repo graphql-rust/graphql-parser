@@ -15,6 +15,11 @@ authors = ["Paul Colomiets <paul@colomiets.name>"]
 edition = "2018"
 rust-version = "1.61"
 
+[features]
+default = []
+# Use 32-bit integers instead of 64-bit for the Number type
+as_i32 = []
+
 [dependencies]
 combine = "4.6.6"
 thiserror = "2"
