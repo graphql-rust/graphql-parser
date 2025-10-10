@@ -129,7 +129,7 @@ impl<'a> Formatter<'a> {
         for c in s.chars() {
             match c {
                 '\n' => has_newline = true,
-                '\r' | '\t' | '\u{0020}'..='\u{FFFF}' => {}
+                '\r' | '\t' | _ if c >= '\u{0020}' => {}
                 _ => has_nonprintable = true,
             }
         }
@@ -143,8 +143,8 @@ impl<'a> Formatter<'a> {
                     '\t' => self.write(r"\t"),
                     '"' => self.write("\\\""),
                     '\\' => self.write(r"\\"),
-                    '\u{0020}'..='\u{FFFF}' => self.buf.push(c),
-                    _ => write!(&mut self.buf, "\\u{:04}", c as u32).unwrap(),
+                    '\u{0000}'..='\u{001F}' => write!(&mut self.buf, "\\u{:04}", c as u32).unwrap(),
+                    _ => self.buf.push(c),
                 }
             }
             self.buf.push('"');
