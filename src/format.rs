@@ -124,17 +124,7 @@ impl<'a> Formatter<'a> {
     }
 
     pub fn write_quoted(&mut self, s: &str) {
-        let mut has_newline = false;
-        let mut has_nonprintable = false;
-        for c in s.chars() {
-            match c {
-                '\n' => has_newline = true,
-                '\r' | '\t' | '\u{0020}'..='\u{FFFF}' => {}
-                _ => has_nonprintable = true,
-            }
-        }
-        if !has_newline || has_nonprintable {
-            use std::fmt::Write;
+        if !s.contains('\n') {
             self.buf.push('"');
             for c in s.chars() {
                 match c {
@@ -143,8 +133,9 @@ impl<'a> Formatter<'a> {
                     '\t' => self.write(r"\t"),
                     '"' => self.write("\\\""),
                     '\\' => self.write(r"\\"),
-                    '\u{0020}'..='\u{FFFF}' => self.buf.push(c),
-                    _ => write!(&mut self.buf, "\\u{:04}", c as u32).unwrap(),
+                    // This covers all Unicode scalar values (range U+0000..=U+D7FF | U+E000..=U+10FFFF)
+                    // as permitted by Rust's char type and GraphQL's (September 2025 version) SourceCharacter 
+                    _ => self.buf.push(c),
                 }
             }
             self.buf.push('"');

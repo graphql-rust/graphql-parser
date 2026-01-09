@@ -1,3 +1,3 @@
-query Foo($site: String = "string") {
+query Foo($site: String = "string 🤓") {
   field
 }
