@@ -35,6 +35,7 @@ pub enum Definition<'a, T: Text<'a>> {
     TypeDefinition(TypeDefinition<'a, T>),
     TypeExtension(TypeExtension<'a, T>),
     DirectiveDefinition(DirectiveDefinition<'a, T>),
+    DirectiveExtension(DirectiveExtension<'a, T>),
 }
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -412,6 +413,7 @@ pub enum DirectiveLocation {
     InputObject,
     InputFieldDefinition,
     VariableDefinition,
+    DirectiveDefinition,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -420,6 +422,7 @@ pub struct DirectiveDefinition<'a, T: Text<'a>> {
     pub description: Option<String>,
     pub name: T::Value,
     pub arguments: Vec<InputValue<'a, T>>,
+    pub directives: Vec<Directive<'a, T>>,
     pub repeatable: bool,
     pub locations: Vec<DirectiveLocation>,
 }
@@ -434,8 +437,29 @@ where
             description: None,
             name,
             arguments: vec![],
+            directives: vec![],
             repeatable: false,
             locations: vec![],
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct DirectiveExtension<'a, T: Text<'a>> {
+    pub position: Pos,
+    pub name: T::Value,
+    pub directives: Vec<Directive<'a, T>>,
+}
+
+impl<'a, T> DirectiveExtension<'a, T>
+where
+    T: Text<'a>,
+{
+    pub fn new(name: T::Value) -> Self {
+        Self {
+            position: Pos::default(),
+            name,
+            directives: vec![],
         }
     }
 }
@@ -464,6 +488,7 @@ impl DirectiveLocation {
             InputObject => "INPUT_OBJECT",
             InputFieldDefinition => "INPUT_FIELD_DEFINITION",
             VariableDefinition => "VARIABLE_DEFINITION",
+            DirectiveLocation::DirectiveDefinition => "DIRECTIVE_DEFINITION",
         }
     }
 
@@ -474,8 +499,19 @@ impl DirectiveLocation {
             Query | Mutation | Subscription | Field | FragmentDefinition | FragmentSpread
             | InlineFragment => true,
 
-            Schema | Scalar | Object | FieldDefinition | ArgumentDefinition | Interface | Union
-            | Enum | EnumValue | InputObject | InputFieldDefinition | VariableDefinition => false,
+            Schema
+            | Scalar
+            | Object
+            | FieldDefinition
+            | ArgumentDefinition
+            | Interface
+            | Union
+            | Enum
+            | EnumValue
+            | InputObject
+            | InputFieldDefinition
+            | VariableDefinition
+            | DirectiveLocation::DirectiveDefinition => false,
         }
     }
 
@@ -513,6 +549,7 @@ impl FromStr for DirectiveLocation {
             "INPUT_OBJECT" => InputObject,
             "INPUT_FIELD_DEFINITION" => InputFieldDefinition,
             "VARIABLE_DEFINITION" => VariableDefinition,
+            "DIRECTIVE_DEFINITION" => DirectiveLocation::DirectiveDefinition,
             _ => return Err(InvalidDirectiveLocation),
         };
 

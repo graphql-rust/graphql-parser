@@ -54,6 +54,7 @@ where
             Definition::TypeDefinition(ref t) => t.display(f),
             Definition::TypeExtension(ref e) => e.display(f),
             Definition::DirectiveDefinition(ref d) => d.display(f),
+            Definition::DirectiveExtension(ref d) => d.display(f),
         }
     }
 }
@@ -459,6 +460,7 @@ where
         f.write("directive @");
         f.write(self.name.as_ref());
         format_arguments(&self.arguments, f);
+        format_directives(&self.directives, f);
         if self.repeatable {
             f.write(" repeatable");
         }
@@ -474,6 +476,19 @@ where
                 f.write(loc.as_str());
             }
         }
+        f.endline();
+    }
+}
+
+impl<'a, T> Displayable for DirectiveExtension<'a, T>
+where
+    T: Text<'a>,
+{
+    fn display(&self, f: &mut Formatter) {
+        f.indent();
+        f.write("extend directive @");
+        f.write(self.name.as_ref());
+        format_directives(&self.directives, f);
         f.endline();
     }
 }
@@ -500,4 +515,5 @@ impl_display!(
     InputObjectType,
     InputObjectTypeExtension,
     DirectiveDefinition,
+    DirectiveExtension,
 );

@@ -589,18 +589,50 @@ where
         position(),
         ident("directive").and(punct("@")).with(name::<'a, T>()),
         parser(arguments_definition),
+        parser(directives),
         optional(ident("repeatable")),
         ident("on").with(parser(directive_locations)),
     )
-        .map(|(position, name, arguments, repeatable, locations)| {
-            DirectiveDefinition {
+        .map(
+            |(position, name, arguments, directives, repeatable, locations)| DirectiveDefinition {
                 position,
                 name,
                 arguments,
+                directives,
                 locations,
                 repeatable: repeatable.is_some(),
                 description: None, // is filled in described_definition
+            },
+        )
+        .parse_stream(input)
+        .into_result()
+}
+
+pub fn directive_extension<'a, T>(
+    input: &mut TokenStream<'a>,
+) -> StdParseResult<DirectiveExtension<'a, T>, TokenStream<'a>>
+where
+    T: Text<'a>,
+{
+    (
+        position(),
+        ident("directive").and(punct("@")).with(name::<'a, T>()),
+        parser(directives),
+    )
+        .flat_map(|(position, name, directives)| {
+            if directives.is_empty() {
+                let mut e = Errors::empty(position);
+                e.add_error(Error::expected_static_message(
+                    "Directive extension should contain at least \
+                 one directive.",
+                ));
+                return Err(e);
             }
+            Ok(DirectiveExtension {
+                position,
+                name,
+                directives,
+            })
         })
         .parse_stream(input)
         .into_result()
@@ -645,6 +677,7 @@ where
                 DirectiveDefinition(ref mut d) => d.description = descr,
                 SchemaDefinition(_) => unreachable!(),
                 TypeExtension(_) => unreachable!(),
+                DirectiveExtension(_) => unreachable!(),
             }
             def
         })
@@ -658,14 +691,28 @@ pub fn type_extension<'a, T>(
 where
     T: Text<'a>,
 {
+    choice((
+        parser(scalar_type_extension).map(TypeExtension::Scalar),
+        parser(object_type_extension).map(TypeExtension::Object),
+        parser(interface_type_extension).map(TypeExtension::Interface),
+        parser(union_type_extension).map(TypeExtension::Union),
+        parser(enum_type_extension).map(TypeExtension::Enum),
+        parser(input_object_type_extension).map(TypeExtension::InputObject),
+    ))
+    .parse_stream(input)
+    .into_result()
+}
+
+pub fn extension<'a, T>(
+    input: &mut TokenStream<'a>,
+) -> StdParseResult<Definition<'a, T>, TokenStream<'a>>
+where
+    T: Text<'a>,
+{
     ident("extend")
         .with(choice((
-            parser(scalar_type_extension).map(TypeExtension::Scalar),
-            parser(object_type_extension).map(TypeExtension::Object),
-            parser(interface_type_extension).map(TypeExtension::Interface),
-            parser(union_type_extension).map(TypeExtension::Union),
-            parser(enum_type_extension).map(TypeExtension::Enum),
-            parser(input_object_type_extension).map(TypeExtension::InputObject),
+            parser(type_extension).map(Definition::TypeExtension),
+            parser(directive_extension).map(Definition::DirectiveExtension),
         )))
         .parse_stream(input)
         .into_result()
@@ -679,7 +726,7 @@ where
 {
     choice((
         parser(schema).map(Definition::SchemaDefinition),
-        parser(type_extension).map(Definition::TypeExtension),
+        parser(extension),
         parser(described_definition),
     ))
     .parse_stream(input)
@@ -726,5 +773,47 @@ mod test {
                 })],
             }
         );
+    }
+
+    #[test]
+    fn directive_definition_directives() {
+        let doc = ast(
+            "directive @a @deprecated(reason: \"x\") repeatable on FIELD | DIRECTIVE_DEFINITION",
+        );
+        match &doc.definitions[0] {
+            Definition::DirectiveDefinition(d) => {
+                assert_eq!(d.name, "a");
+                assert_eq!(d.directives.len(), 1);
+                assert_eq!(d.directives[0].name, "deprecated");
+                assert!(d.repeatable);
+                assert_eq!(
+                    d.locations,
+                    vec![
+                        DirectiveLocation::Field,
+                        DirectiveLocation::DirectiveDefinition
+                    ]
+                );
+            }
+            other => panic!("unexpected definition: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn directive_extension() {
+        let doc = ast("extend directive @a @deprecated");
+        match &doc.definitions[0] {
+            Definition::DirectiveExtension(d) => {
+                assert_eq!(d.position, Pos { line: 1, column: 8 });
+                assert_eq!(d.name, "a");
+                assert_eq!(d.directives.len(), 1);
+                assert_eq!(d.directives[0].name, "deprecated");
+            }
+            other => panic!("unexpected definition: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn directive_extension_without_directives() {
+        assert!(parse_schema::<String>("extend directive @a").is_err());
     }
 }
