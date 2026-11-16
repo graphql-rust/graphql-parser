@@ -1,0 +1,5 @@
+directive @onDirective on DIRECTIVE_DEFINITION
+
+directive @foo @onDirective on OBJECT
+
+directive @bar(arg: String) @deprecated(reason: "Use `@baz`.") repeatable on FIELD | OBJECT

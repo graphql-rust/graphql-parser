@@ -123,3 +123,11 @@ fn directive_variable_definition() {
 fn repeatable() {
     roundtrip("repeatable")
 }
+#[test]
+fn directive_directives() {
+    roundtrip("directive_directives")
+}
+#[test]
+fn extend_directive() {
+    roundtrip("extend_directive")
+}

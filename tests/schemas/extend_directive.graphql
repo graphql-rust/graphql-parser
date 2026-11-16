@@ -1,0 +1,1 @@
+extend directive @foo @deprecated(reason: "No longer supported")
